@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "strict": true,
+
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "target": "ESNext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": ["es2015", "dom"],
+    "rootDir": "./",
+    "esModuleInterop": true,
+    "baseUrl": "src"
+  }
+}
