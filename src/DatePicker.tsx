@@ -25,7 +25,6 @@ type DayOptionType = {
   type: "day";
   value: Dayjs;
   label: number;
-  isDisabled: boolean;
 };
 
 type MonthOptionType = {
@@ -56,7 +55,7 @@ const getDayOptions = (date: Dayjs): DayOptionType[] => {
   const dayOfYear = date.startOf("month").dayOfYear();
   const daysInMonth = date.daysInMonth();
   const leadingDays = date.startOf("month").day();
-  const trailingDays = (7 - ((daysInMonth + leadingDays) % 7)) % 7;
+  const trailingDays = 7 - ((daysInMonth + leadingDays) % 7);
 
   return range(daysInMonth + leadingDays + trailingDays).map(i => {
     const day = dayjs(date).dayOfYear(i + dayOfYear - leadingDays);
@@ -64,7 +63,6 @@ const getDayOptions = (date: Dayjs): DayOptionType[] => {
       type: "day",
       value: day,
       label: day.date(),
-      isDisabled: day.month() !== date.month(),
     };
   });
 };
@@ -143,7 +141,7 @@ export const DatePicker = (): React.ReactElement => {
   );
 
   const firstOfMonth = useMemo(() => {
-    const firstOfMonth = dayOptions.find(({ isDisabled }) => !isDisabled)
+    const firstOfMonth = dayOptions.find(({ value }) => value.date() === 1)
       ?.value;
     if (!firstOfMonth) {
       throw new Error();
@@ -340,6 +338,13 @@ export const DatePicker = (): React.ReactElement => {
   };
 
   useEffect(() => {
+    if (value && value.month() !== firstOfMonth.month()) {
+      const nextDayOptions = getDayOptions(value);
+      setDayOptions(nextDayOptions);
+    }
+  }, [value, firstOfMonth]);
+
+  useEffect(() => {
     setInputValue("");
   }, [value]);
 
@@ -368,15 +373,17 @@ export const DatePicker = (): React.ReactElement => {
               <Option
                 key={option.value.dayOfYear()}
                 option={option}
-                isActive={value === option.value}
+                isActive={value?.isSame(option.value)}
                 isFocused={focused === option}
-                isDisabled={option.isDisabled}
                 handleFocus={setFocused}
                 handleSelect={setValue}
                 css={{
                   position: "relative",
                   padding: 0,
                   width: "calc(100% / 7)",
+                  ...(option.value.month() !== firstOfMonth.month() && {
+                    opacity: 0.5,
+                  }),
                 }}
               >
                 <div css={{ paddingBottom: "100%" }}>
