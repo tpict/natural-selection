@@ -6,10 +6,11 @@ import {
   useCloseOnBlur,
   useLabelFilter,
   useManagedFocus,
-  useMenuPlacement,
+  useScrollToFocused,
 } from "../packages/core/src/hooks";
 
 import { Menu, Option, Container, Control, Placeholder } from "./examples";
+import { useMenuPlacementStyles } from "./hooks";
 
 type MultiSelectProps<T> = {
   options: T[];
@@ -26,13 +27,23 @@ export const SingleSelect = <T extends { value: string; label: string }>({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const placement = useMenuPlacement(isMenuOpen, menuRef, {
+  const placementStyles = useMenuPlacementStyles(isMenuOpen, menuRef, {
     maxHeight: 300,
     minHeight: 140,
     controlHeight: 38,
   });
 
-  const { focused, setFocused } = useManagedFocus(options, isMenuOpen);
+  const { focused, setFocused, handleOptionRef, focusedRef } = useManagedFocus(
+    options,
+    isMenuOpen,
+  );
+
+  const scrollToFocusedOnUpdate = useScrollToFocused(
+    isMenuOpen,
+    focused,
+    menuRef,
+    focusedRef,
+  );
 
   const handleKeyDownDefault = useDefaultKeyDownHandler(
     options,
@@ -46,6 +57,7 @@ export const SingleSelect = <T extends { value: string; label: string }>({
       handleFocusChange: setFocused,
       handleInputChange: setInputValue,
       setMenuOpen,
+      scrollToFocusedOnUpdate,
     },
   );
 
@@ -112,7 +124,7 @@ export const SingleSelect = <T extends { value: string; label: string }>({
       </Control>
 
       {isMenuOpen && (
-        <Menu ref={menuRef} css={placement}>
+        <Menu ref={menuRef} css={placementStyles}>
           {filteredOptions.map(option => (
             <Option
               key={option.value}
@@ -121,6 +133,7 @@ export const SingleSelect = <T extends { value: string; label: string }>({
               isFocused={focused?.value === option?.value}
               handleFocus={setFocused}
               handleSelect={setValue}
+              {...handleOptionRef(option)}
             >
               {option.label}
             </Option>

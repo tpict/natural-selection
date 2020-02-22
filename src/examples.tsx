@@ -15,11 +15,15 @@ export function Option<T>({
   isDisabled,
   isActive,
   isFocused,
+  innerRef,
   ...rest
-}: OptionProps<T>): React.ReactElement {
+}: OptionProps<T> & {
+  innerRef?: React.MutableRefObject<HTMLDivElement | null>;
+}): React.ReactElement {
   return (
     <BaseOption
       {...rest}
+      innerRef={innerRef}
       css={theme => ({
         color: theme.colors.background,
         backgroundColor: theme.colors.foreground,

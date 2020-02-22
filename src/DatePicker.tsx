@@ -10,6 +10,7 @@ import range from "lodash-es/range";
 import { parseDate as chrono } from "chrono-node";
 import { useTheme } from "@emotion/react";
 
+import { useMenuPlacementStyles } from "./hooks";
 import { UnreachableCaseError } from "./util";
 
 import { Input } from "../packages/core/src/components";
@@ -18,7 +19,6 @@ import {
   useDefaultKeyDownHandler,
   useCloseOnBlur,
   useManagedFocus,
-  useMenuPlacement,
 } from "../packages/core/src/hooks";
 
 type DayOptionType = {
@@ -218,11 +218,15 @@ export const DatePicker = (): React.ReactElement => {
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const theme = useTheme();
-  const { maxHeight: _m, ...position } = useMenuPlacement(isMenuOpen, menuRef, {
-    maxHeight: 500,
-    minHeight: 500,
-    controlHeight: 48,
-  });
+  const { maxHeight: _m, ...position } = useMenuPlacementStyles(
+    isMenuOpen,
+    menuRef,
+    {
+      maxHeight: 500,
+      minHeight: 500,
+      controlHeight: 48,
+    },
+  );
 
   useEffect(() => {
     if (!inputValue) {

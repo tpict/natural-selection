@@ -6,10 +6,11 @@ import {
   useCloseOnBlur,
   useLabelFilter,
   useManagedFocus,
-  useMenuPlacement,
+  useScrollToFocused,
 } from "../packages/core/src/hooks";
 
 import { Menu, Option, Container, Control, Placeholder } from "./examples";
+import { useMenuPlacementStyles } from "./hooks";
 
 type MultiSelectProps<T> = {
   options: T[];
@@ -24,7 +25,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
   const [value, setValue] = useState<T[]>([]);
   const [inputValue, setInputValue] = useState("");
 
-  const placement = useMenuPlacement(isMenuOpen, menuRef, {
+  const placementStyles = useMenuPlacementStyles(isMenuOpen, menuRef, {
     maxHeight: 300,
     minHeight: 140,
     controlHeight: 38,
@@ -44,7 +45,17 @@ export const MultiSelect = <T extends { label: string; value: string }>({
     });
   };
 
-  const { focused, setFocused } = useManagedFocus(options, isMenuOpen);
+  const { focused, setFocused, handleOptionRef, focusedRef } = useManagedFocus(
+    options,
+    isMenuOpen,
+  );
+
+  const scrollToFocusedOnUpdate = useScrollToFocused(
+    isMenuOpen,
+    focused,
+    menuRef,
+    focusedRef,
+  );
 
   const handleKeyDownDefault = useDefaultKeyDownHandler(
     options,
@@ -54,6 +65,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
       handleFocusChange: setFocused,
       handleInputChange: setInputValue,
       setMenuOpen,
+      scrollToFocusedOnUpdate,
     },
   );
 
@@ -109,7 +121,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
       </Control>
 
       {isMenuOpen && (
-        <Menu ref={menuRef} css={placement}>
+        <Menu ref={menuRef} css={placementStyles}>
           {filteredOptions.map(option => {
             const isActive = value.includes(option);
 
@@ -125,6 +137,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
                   display: "flex",
                   justifyContent: "space-between",
                 }}
+                {...handleOptionRef(option)}
               >
                 {option.label}
 
