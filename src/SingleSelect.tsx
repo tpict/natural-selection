@@ -7,6 +7,7 @@ import {
   useLabelFilter,
   useManagedFocus,
   useScrollToFocused,
+  useScrollCaptor,
 } from "../packages/core/src/hooks";
 
 import { Menu, Option, Container, Control, Placeholder } from "./examples";
@@ -26,6 +27,8 @@ export const SingleSelect = <T extends { value: string; label: string }>({
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useScrollCaptor(menuRef, isMenuOpen);
 
   const placementStyles = useMenuPlacementStyles(isMenuOpen, menuRef, {
     maxHeight: 300,

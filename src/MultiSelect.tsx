@@ -7,6 +7,7 @@ import {
   useLabelFilter,
   useManagedFocus,
   useScrollToFocused,
+  useScrollCaptor,
 } from "../packages/core/src/hooks";
 
 import { Menu, Option, Container, Control, Placeholder } from "./examples";
@@ -48,6 +49,8 @@ export const MultiSelect = <T extends { label: string; value: string }>({
     options,
     isMenuOpen,
   );
+
+  useScrollCaptor(menuRef, isMenuOpen);
 
   const scrollToFocusedOnUpdate = useScrollToFocused(
     isMenuOpen,
