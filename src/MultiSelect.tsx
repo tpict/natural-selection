@@ -28,7 +28,6 @@ export const MultiSelect = <T extends { label: string; value: string }>({
   const placementStyles = useMenuPlacementStyles(isMenuOpen, menuRef, {
     maxHeight: 300,
     minHeight: 140,
-    controlHeight: 38,
   });
 
   const toggleValue = (selectedOption: T | null): void => {

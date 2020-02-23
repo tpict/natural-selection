@@ -63,6 +63,11 @@ const App: React.FC = () => {
       <ThemeProvider theme={theme}>
         <Global
           styles={theme => ({
+            html: {
+              fontSize: theme.fontSizes.root,
+              lineHeight: theme.lineHeights.root,
+            },
+
             body: {
               backgroundColor: theme.colors.background,
               color: theme.colors.foreground,

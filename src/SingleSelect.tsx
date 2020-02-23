@@ -30,7 +30,6 @@ export const SingleSelect = <T extends { value: string; label: string }>({
   const placementStyles = useMenuPlacementStyles(isMenuOpen, menuRef, {
     maxHeight: 300,
     minHeight: 140,
-    controlHeight: 38,
   });
 
   const { focused, setFocused, handleOptionRef, focusedRef } = useManagedFocus(

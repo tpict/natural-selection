@@ -27,7 +27,7 @@ export function Option<T>({
       css={theme => ({
         color: theme.colors.background,
         backgroundColor: theme.colors.foreground,
-        padding: "0.5rem",
+        padding: theme.space.option.padding,
         cursor: "pointer",
 
         ...(isDisabled && {
@@ -56,8 +56,8 @@ export const Control: React.FC<JSX.IntrinsicElements["div"]> = props => (
   <div
     css={theme => ({
       cursor: "pointer",
-      padding: "0.5rem",
-      border: "2px solid",
+      padding: theme.space.control.padding,
+      border: theme.space.control.border,
       borderColor: theme.colors.foreground,
       borderRadius: "0.4rem",
       borderStyle: "dashed",

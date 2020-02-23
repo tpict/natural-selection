@@ -222,7 +222,6 @@ export const DatePicker = (): React.ReactElement => {
     {
       maxHeight: 500,
       minHeight: 500,
-      controlHeight: 48,
     },
   );
 

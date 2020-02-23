@@ -9,9 +9,22 @@ export const blueOnPink = {
     foreground: "blue",
     foregroundFocused: "DodgerBlue",
     foregroundActive: "DarkBlue",
-    background: "white",
+    background: "pink",
+  },
+  fontSizes: {
+    root: "16px",
+  },
+  lineHeights: {
+    root: 1.5,
   },
   space: {
+    control: {
+      padding: "0.25rem",
+      border: "0.125rem",
+    },
+    option: {
+      padding: "0.25rem",
+    },
     datePicker: {
       padding: "0.25rem",
       navOptionMargin: "0 0.125rem",
