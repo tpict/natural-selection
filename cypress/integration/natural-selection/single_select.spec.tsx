@@ -99,9 +99,19 @@ it("filters options based on input", () => {
 });
 
 it("closes the menu on selection", () => {
-  cy.queryByText("Pick an option").click();
+  // TODO fix this force, Cypress thinks the placeholder is covering it
+  cy.queryByLabelText("Single select example").click({ force: true });
   cy.queryByText("Option 1").should("exist");
   cy.queryByText("Option 2").click();
+  cy.queryByText("Option 1").should("not.exist");
+
+  // Test that the menu is closed if the same option is picked again
+  cy.queryByLabelText("Single select example").click({ force: true });
+  cy.queryByText("Option 1").should("exist");
+  cy.queryByText("Option 1")
+    .then($el => cy.wrap($el.parent()).queryByText("Option 2"))
+    .then($el => $el.click());
+  /* cy.queryAllByText("Option 2").click(); */
   cy.queryByText("Option 1").should("not.exist");
 });
 

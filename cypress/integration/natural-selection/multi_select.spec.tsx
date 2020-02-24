@@ -81,6 +81,9 @@ it("selects options on click", () => {
   cy.queryByText("Option 3").click();
   cy.queryByText("Select multiple options").should("not.exist");
   cy.queryByText(/^Option 2, Option 3/).should("exist");
+  cy.queryByText("Option 2").click();
+  cy.queryByText(/^Option 2, Option 3/).should("not.exist");
+  cy.queryByText(/^Option 3,/).should("exist");
 });
 
 it("selects an option on keypress", () => {

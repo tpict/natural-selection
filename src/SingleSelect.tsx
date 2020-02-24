@@ -13,7 +13,7 @@ import {
 import { Menu, Option, Container, Control, Placeholder } from "./components";
 import { useMenuPlacementStyles } from "./hooks";
 
-type MultiSelectProps<T> = {
+type SingleSelectProps<T> = {
   "aria-label"?: string;
   options: T[];
 };
@@ -21,10 +21,15 @@ type MultiSelectProps<T> = {
 export const SingleSelect = <T extends { value: string; label: string }>({
   options,
   ...rest
-}: MultiSelectProps<T>): React.ReactElement => {
+}: SingleSelectProps<T>): React.ReactElement => {
   const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
 
-  const [value, setValue] = useState<T | null>(null);
+  const [value, setValue_] = useState<T | null>(null);
+  const setValue: typeof setValue_ = useCallback((...args) => {
+    setValue_(...args);
+    setMenuOpen(false);
+  }, []);
+
   const [inputValue, setInputValue] = useState("");
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -78,15 +83,11 @@ export const SingleSelect = <T extends { value: string; label: string }>({
         handleKeyDownDefault(event);
       }
     },
-    [handleKeyDownDefault, inputValue],
+    [handleKeyDownDefault, inputValue, setValue],
   );
 
   useEffect(() => {
     setInputValue("");
-  }, [value]);
-
-  useEffect(() => {
-    setMenuOpen(false);
   }, [value]);
 
   useEffect(() => {
