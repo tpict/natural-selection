@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import AutosizeInput, { AutosizeInputProps } from "react-input-autosize";
 
-import { simpleMemo } from "./util";
+import { simpleMemo, preventDefault } from "./utils";
 
 export const Input = React.forwardRef<HTMLInputElement, AutosizeInputProps>(
   function Input(props, ref) {
@@ -60,9 +60,9 @@ export const Option = simpleMemo(function Option<T>({
       {...rest}
       ref={innerRef}
       tabIndex={-1}
+      onMouseDown={preventDefault}
       onClick={onClick}
       onMouseOver={onMouseOver}
-      /* onMouseMove={onMouseOver} */
     />
   );
 });

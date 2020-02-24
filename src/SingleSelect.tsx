@@ -14,11 +14,13 @@ import { Menu, Option, Container, Control, Placeholder } from "./components";
 import { useMenuPlacementStyles } from "./hooks";
 
 type MultiSelectProps<T> = {
+  "aria-label"?: string;
   options: T[];
 };
 
 export const SingleSelect = <T extends { value: string; label: string }>({
   options,
+  ...rest
 }: MultiSelectProps<T>): React.ReactElement => {
   const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
 
@@ -122,6 +124,7 @@ export const SingleSelect = <T extends { value: string; label: string }>({
             setInputValue(event.currentTarget.value);
           }}
           onBlur={handleInputBlur}
+          aria-label={rest["aria-label"]}
         />
       </Control>
 

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 
-const noop = (): void => {}; // eslint-disable-line @typescript-eslint/no-empty-function
+import { noop } from "../utils";
 
 export const useDefaultKeyDownHandler = <T extends object>(
   options: T[],

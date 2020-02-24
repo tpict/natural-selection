@@ -62,37 +62,33 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
-      <Switch>
-        <Route path="/examples">
-          <Examples />
-        </Route>
+      <DynamicThemeContext.Provider value={setTheme}>
+        <ThemeProvider theme={theme}>
+          <Global
+            styles={theme => ({
+              html: {
+                fontSize: theme.fontSizes.root,
+                lineHeight: theme.lineHeights.root,
+              },
 
-        <Route path="/">
-          <DynamicThemeContext.Provider value={setTheme}>
-            <ThemeProvider theme={theme}>
-              <Global
-                styles={theme => ({
-                  html: {
-                    fontSize: theme.fontSizes.root,
-                    lineHeight: theme.lineHeights.root,
-                  },
+              body: {
+                backgroundColor: theme.colors.background,
+                color: theme.colors.foreground,
+                margin: 0,
+              },
 
-                  body: {
-                    backgroundColor: theme.colors.background,
-                    color: theme.colors.foreground,
-                  },
+              "*, *:before, *:after": {
+                boxSizing: "border-box",
+              },
+            })}
+          />
 
-                  "#root": {
-                    paddingTop: "65rem",
-                    paddingBottom: "65rem",
-                  },
+          <Switch>
+            <Route path="/examples">
+              <Examples />
+            </Route>
 
-                  "*, *:before, *:after": {
-                    boxSizing: "border-box",
-                  },
-                })}
-              />
-
+            <Route path="/">
               <h1>single select</h1>
               <SingleSelect options={options} />
 
@@ -104,10 +100,10 @@ const App: React.FC = () => {
 
               <h1>menu</h1>
               <Menu options={menuOptions} />
-            </ThemeProvider>
-          </DynamicThemeContext.Provider>
-        </Route>
-      </Switch>
+            </Route>
+          </Switch>
+        </ThemeProvider>
+      </DynamicThemeContext.Provider>
     </BrowserRouter>
   );
 };

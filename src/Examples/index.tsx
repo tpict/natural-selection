@@ -1,12 +1,53 @@
 import React from "react";
-import { Link, Route, Switch } from "react-router-dom";
+import { useRouteMatch, Redirect, Link, Route, Switch } from "react-router-dom";
 
-export const Examples: React.FC = () => (
-  <>
-    <Link to="/examples/single-select">Single select</Link>
+import { SingleSelectExample } from "./SingleSelectExample";
+import { MultiSelectExample } from "./MultiSelectExample";
 
-    <Switch>
-      <Route path="/examples/single-select">YOOOoO</Route>
-    </Switch>
-  </>
-);
+export const Examples: React.FC = () => {
+  const match = useRouteMatch("/examples");
+
+  return (
+    <>
+      {match?.isExact && <Redirect to="/examples/single-select" />}
+
+      <div css={{ display: "flex", height: "100%" }}>
+        <div
+          css={theme => ({
+            flexGrow: 0,
+            flexShrink: 0,
+            flexBasis: "10rem",
+            color: theme.colors.background,
+            backgroundColor: theme.colors.foreground,
+          })}
+        >
+          <ul>
+            <li>
+              <Link to="/examples/single-select">Single select</Link>
+            </li>
+
+            <li>
+              <Link to="/examples/multi-select">Multi select</Link>
+            </li>
+          </ul>
+        </div>
+
+        <div
+          css={{
+            flexGrow: 1,
+          }}
+        >
+          <Switch>
+            <Route path="/examples/single-select">
+              <SingleSelectExample />
+            </Route>
+
+            <Route path="/examples/multi-select">
+              <MultiSelectExample />
+            </Route>
+          </Switch>
+        </div>
+      </div>
+    </>
+  );
+};
