@@ -9,17 +9,16 @@ import dayjs, { Dayjs } from "dayjs";
 import range from "lodash-es/range";
 import { parseDate as chrono } from "chrono-node";
 import { useTheme } from "@emotion/react";
-
-import { useMenuPlacementStyles } from "./hooks";
-import { UnreachableCaseError } from "./util";
-
-import { Input } from "../packages/core/src/components";
-import { Menu, Option, Control, Container, Placeholder } from "./components";
 import {
+  Input,
   useDefaultKeyDownHandler,
   useCloseOnBlur,
   useManagedFocus,
-} from "../packages/core/src/hooks";
+} from "@natural-selection/core";
+
+import { Menu, Option, Control, Container, Placeholder } from "./components";
+import { useMenuPlacementStyles } from "./hooks";
+import { UnreachableCaseError } from "./util";
 
 type DayOptionType = {
   type: "day";
@@ -131,7 +130,7 @@ const parseDate = (inputValue: string): Dayjs | null => {
   return date ? dayjs(date) : null;
 };
 
-export const DatePicker = (): React.ReactElement => {
+export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
   const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
 
   const [mode, setMode] = useState<"day" | "month" | "year">("day");
@@ -469,6 +468,7 @@ export const DatePicker = (): React.ReactElement => {
             setInputValue(event.currentTarget.value);
           }}
           onBlur={handleInputBlur}
+          aria-label={props["aria-label"]}
         />
       </Control>
 

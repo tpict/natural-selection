@@ -6,13 +6,12 @@ import React, {
   useMemo,
 } from "react";
 import flatMapDeep from "lodash-es/flatMapDeep";
-
-import { Input } from "../packages/core/src/components";
 import {
+  Input,
   useDefaultKeyDownHandler,
   useCloseOnBlur,
   useManagedFocus,
-} from "../packages/core/src/hooks";
+} from "@natural-selection/core";
 
 import {
   Menu as BaseMenu,

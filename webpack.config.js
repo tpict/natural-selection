@@ -1,5 +1,6 @@
 "use strict";
 
+const path = require("path");
 const webpack = require("webpack");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
@@ -41,5 +42,8 @@ module.exports = {
   resolve: {
     plugins: [new TsconfigPathsPlugin()],
     extensions: [".ts", ".tsx", ".js"],
+    alias: {
+      "@natural-selection/core": path.resolve(__dirname, "packages/core/src/index.tsx")
+    }
   },
 };

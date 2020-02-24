@@ -21,6 +21,10 @@
     "lib": ["es2015", "dom"],
     "rootDir": "./",
     "esModuleInterop": true,
-    "baseUrl": "src"
+    "baseUrl": "src",
+
+    "paths": {
+      "@natural-selection/core": ["../packages/core/src/index.tsx"]
+    }
   }
 }

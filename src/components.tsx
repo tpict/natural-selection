@@ -1,9 +1,8 @@
 import React from "react";
-
 import {
   Option as BaseOption,
   OptionProps as BaseOptionProps,
-} from "../packages/core/src/components";
+} from "@natural-selection/core";
 
 export type OptionProps<T> = BaseOptionProps<T> & {
   isActive?: boolean;

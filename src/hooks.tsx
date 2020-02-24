@@ -1,12 +1,11 @@
 import { useMemo } from "react";
 import { CSSObject, useTheme } from "@emotion/react";
 import { stripUnit } from "polished";
-
 import {
   useMenuPlacement,
   MenuPlacementOptions,
-} from "../packages/core/src/hooks";
-import { alignToControl } from "../packages/core/src/react-select/menu";
+  alignToControl,
+} from "@natural-selection/core";
 
 export const useMenuPlacementStyles = (
   isMenuOpen: boolean,

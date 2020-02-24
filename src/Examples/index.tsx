@@ -3,6 +3,7 @@ import { useRouteMatch, Redirect, Link, Route, Switch } from "react-router-dom";
 
 import { SingleSelectExample } from "./SingleSelectExample";
 import { MultiSelectExample } from "./MultiSelectExample";
+import { DatePickerExample } from "./DatePickerExample";
 
 export const Examples: React.FC = () => {
   const match = useRouteMatch("/examples");
@@ -29,6 +30,10 @@ export const Examples: React.FC = () => {
             <li>
               <Link to="/examples/multi-select">Multi select</Link>
             </li>
+
+            <li>
+              <Link to="/examples/date-picker">Date picker</Link>
+            </li>
           </ul>
         </div>
 
@@ -44,6 +49,10 @@ export const Examples: React.FC = () => {
 
             <Route path="/examples/multi-select">
               <MultiSelectExample />
+            </Route>
+
+            <Route path="/examples/date-picker">
+              <DatePickerExample />
             </Route>
           </Switch>
         </div>

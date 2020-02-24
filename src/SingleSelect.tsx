@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 
-import { Input } from "../packages/core/src/components";
 import {
+  Input,
   useDefaultKeyDownHandler,
   useCloseOnBlur,
   useLabelFilter,
   useManagedFocus,
   useScrollToFocused,
   useScrollCaptor,
-} from "../packages/core/src/hooks";
+} from "@natural-selection/core";
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
 import { useMenuPlacementStyles } from "./hooks";
