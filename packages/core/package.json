@@ -2,13 +2,10 @@
   "name": "@natural-selection/core",
   "version": "0.1.0-rc1",
   "description": "Core hooks and components for Natural Selection",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tpict/natural-selection-core.git"
+    "url": "git+https://github.com/tpict/natural-selection.git"
   },
   "keywords": [
     "react",
@@ -19,9 +16,9 @@
   "author": "Tom Picton",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tpict/natural-selection-core/issues"
+    "url": "https://github.com/tpict/natural-selection/issues"
   },
-  "homepage": "https://github.com/tpict/natural-selection-core#readme",
+  "homepage": "https://github.com/tpict/natural-selection#readme",
   "devDependencies": {
     "@types/react": "^16.9.22",
     "@types/react-dom": "^16.9.5",
