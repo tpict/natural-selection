@@ -15,10 +15,12 @@ import { useMenuPlacementStyles } from "./hooks";
 
 type MultiSelectProps<T> = {
   options: T[];
+  "aria-label"?: string;
 };
 
 export const MultiSelect = <T extends { label: string; value: string }>({
   options,
+  ...rest
 }: MultiSelectProps<T>): React.ReactElement => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -119,6 +121,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
             setInputValue(event.currentTarget.value);
           }}
           onBlur={useCloseOnBlur(inputRef, menuRef, () => setMenuOpen(false))}
+          aria-label={rest["aria-label"]}
         />
       </Control>
 

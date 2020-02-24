@@ -14,6 +14,67 @@ it("opens the menu on space press", () => {
   cy.queryByText("Option 1").should("exist");
 });
 
+it("focuses options on mouse hover", () => {
+  // TODO fix this force, Cypress thinks the placeholder is covering it
+  cy.queryByLabelText("Single select example").click({ force: true });
+  cy.queryByText("Option 2").should(
+    "have.css",
+    "backgroundColor",
+    "rgb(0, 0, 255)",
+  );
+
+  cy.queryByText("Option 2").trigger("mouseover");
+  cy.queryByText("Option 2").should(
+    "have.css",
+    "backgroundColor",
+    "rgb(30, 144, 255)",
+  );
+
+  // DOM focus unchanged
+  cy.queryByLabelText("Single select example").should("be.focused");
+
+  cy.queryByText("Option 1").trigger("mouseover");
+  cy.queryByText("Option 2").should(
+    "have.css",
+    "backgroundColor",
+    "rgb(0, 0, 255)",
+  );
+});
+
+it("focuses options on arrow key press", () => {
+  // TODO fix this force, Cypress thinks the placeholder is covering it
+  cy.queryByLabelText("Single select example").click({ force: true });
+  cy.queryByText("Option 2").should(
+    "have.css",
+    "backgroundColor",
+    "rgb(0, 0, 255)",
+  );
+
+  // TODO fix this force, Cypress thinks the placeholder is covering it
+  cy.queryByLabelText("Single select example").type("{downarrow}", {
+    force: true,
+  });
+  cy.queryByText("Option 2").should(
+    "have.css",
+    "backgroundColor",
+    "rgb(30, 144, 255)",
+  );
+
+  // DOM focus unchanged
+  cy.queryByLabelText("Single select example").should("be.focused");
+
+  // TODO fix this force, Cypress thinks the placeholder is covering it
+  cy.queryByLabelText("Single select example").type("{uparrow}", {
+    force: true,
+  });
+  cy.queryByText("Option 1").trigger("mouseover");
+  cy.queryByText("Option 2").should(
+    "have.css",
+    "backgroundColor",
+    "rgb(0, 0, 255)",
+  );
+});
+
 it("selects an option on click", () => {
   cy.queryByText("Pick an option").click();
   cy.queryByText("Option 2").click();
@@ -22,11 +83,19 @@ it("selects an option on click", () => {
 });
 
 it("selects an option on keypress", () => {
-  cy.queryByText("Pick an option").click();
-  cy.queryByText("Option 2").trigger("mouseover");
-  cy.queryByLabelText("Single select example").type(" ", { force: true });
-  cy.queryByText("Pick an option").should("not.exist");
+  // TODO fix this force, Cypress thinks the placeholder is covering it
+  cy.queryByLabelText("Single select example").type("o", { force: true });
   cy.queryByText("Option 2").should("exist");
+});
+
+it("filters options based on input", () => {
+  // TODO fix this force, Cypress thinks the placeholder is covering it
+  cy.queryByLabelText("Single select example").type("option 1", {
+    force: true,
+  });
+  cy.queryByText("Option 1").should("exist");
+  cy.queryByText("Option 10").should("exist");
+  cy.queryAllByText(/^Option 2/).should("not.exist");
 });
 
 it("closes the menu on selection", () => {
@@ -37,8 +106,8 @@ it("closes the menu on selection", () => {
 });
 
 it("closes the menu on loss of focus", () => {
-  cy.queryAllByText("Pick an option").click();
-  cy.queryAllByText("Option 1").should("exist");
+  cy.queryByText("Pick an option").click();
+  cy.queryByText("Option 1").should("exist");
   cy.wrap(document.body).click({ force: true });
-  cy.queryAllByText("Option 1").should("not.exist");
+  cy.queryByText("Option 1").should("not.exist");
 });

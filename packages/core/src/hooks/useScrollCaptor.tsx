@@ -6,6 +6,9 @@ enum ScrollState {
   Neither,
 }
 
+// NOTE This behavior is provided by
+// https://developer.mozilla.org/en-US/docs/Web/CSS/overscroll-behavior
+// Waiting on Safari support
 export const useScrollCaptor = (
   target: React.MutableRefObject<HTMLElement | null>,
   isMenuOpen = true,
