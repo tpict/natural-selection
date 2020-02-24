@@ -21,7 +21,7 @@ import {
   Container,
   Control,
   Placeholder,
-} from "./examples";
+} from "./components";
 
 type SubmenuOptionType = { label: string; options: MenuOptionType[] };
 type SelectableMenuOptionType = { label: string; value: string };

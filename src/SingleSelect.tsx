@@ -10,7 +10,7 @@ import {
   useScrollCaptor,
 } from "../packages/core/src/hooks";
 
-import { Menu, Option, Container, Control, Placeholder } from "./examples";
+import { Menu, Option, Container, Control, Placeholder } from "./components";
 import { useMenuPlacementStyles } from "./hooks";
 
 type MultiSelectProps<T> = {

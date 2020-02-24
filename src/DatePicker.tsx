@@ -14,7 +14,7 @@ import { useMenuPlacementStyles } from "./hooks";
 import { UnreachableCaseError } from "./util";
 
 import { Input } from "../packages/core/src/components";
-import { Menu, Option, Control, Container, Placeholder } from "./examples";
+import { Menu, Option, Control, Container, Placeholder } from "./components";
 import {
   useDefaultKeyDownHandler,
   useCloseOnBlur,

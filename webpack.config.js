@@ -1,39 +1,36 @@
 "use strict";
 
-const path = require("path");
 const webpack = require("webpack");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  mode: 'development',
-  devtool: 'inline-source-map',
-  context: __dirname,
+  mode: "development",
+  devtool: "inline-source-map",
+
+  devServer: {
+    historyApiFallback: true,
+  },
+
   entry: {
     app: "./src/index.tsx",
   },
 
+  output: {
+    publicPath: "/",
+  },
+
   plugins: [
-    new CleanWebpackPlugin(),
     new ForkTsCheckerWebpackPlugin(),
-new webpack.HotModuleReplacementPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
       template: "src/template.html",
-    })
+    }),
   ],
 
   module: {
     rules: [
-      {
-        parser: {
-          // Prevent lodash colliding with underscore on legacy pages
-          // https://github.com/lodash/lodash/issues/1798#issuecomment-233804586
-          // insanity
-          amd: false,
-        },
-      },
       {
         test: /\.(js|ts)x?/,
         exclude: /node_modules/,
@@ -42,14 +39,7 @@ new webpack.HotModuleReplacementPlugin(),
     ],
   },
   resolve: {
-    plugins: [new TsconfigPathsPlugin(),
-
-    ],
+    plugins: [new TsconfigPathsPlugin()],
     extensions: [".ts", ".tsx", ".js"],
-  },
-  optimization: {
-    splitChunks: {
-      chunks: "async",
-    },
   },
 };

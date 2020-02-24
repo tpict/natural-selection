@@ -24,3 +24,6 @@ yarn-error.log*
 tags
 
 lib
+dist
+cypress/screenshots
+cypress/videos

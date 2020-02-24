@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { Global, ThemeProvider } from "@emotion/react";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 
 import { SingleSelect } from "./SingleSelect";
 import { MultiSelect } from "./MultiSelect";
 import { DatePicker } from "./DatePicker";
 import { Menu } from "./Menu";
+import { Examples } from "./Examples";
 import { blueOnPink, Theme, DynamicThemeContext } from "./themes";
 
 const options = [
@@ -59,44 +61,54 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<Theme>(blueOnPink);
 
   return (
-    <DynamicThemeContext.Provider value={setTheme}>
-      <ThemeProvider theme={theme}>
-        <Global
-          styles={theme => ({
-            html: {
-              fontSize: theme.fontSizes.root,
-              lineHeight: theme.lineHeights.root,
-            },
+    <BrowserRouter>
+      <Switch>
+        <Route path="/examples">
+          <Examples />
+        </Route>
 
-            body: {
-              backgroundColor: theme.colors.background,
-              color: theme.colors.foreground,
-            },
+        <Route path="/">
+          <DynamicThemeContext.Provider value={setTheme}>
+            <ThemeProvider theme={theme}>
+              <Global
+                styles={theme => ({
+                  html: {
+                    fontSize: theme.fontSizes.root,
+                    lineHeight: theme.lineHeights.root,
+                  },
 
-            "#root": {
-              paddingTop: "65rem",
-              paddingBottom: "65rem",
-            },
+                  body: {
+                    backgroundColor: theme.colors.background,
+                    color: theme.colors.foreground,
+                  },
 
-            "*, *:before, *:after": {
-              boxSizing: "border-box",
-            },
-          })}
-        />
+                  "#root": {
+                    paddingTop: "65rem",
+                    paddingBottom: "65rem",
+                  },
 
-        <h1>single select</h1>
-        <SingleSelect options={options} />
+                  "*, *:before, *:after": {
+                    boxSizing: "border-box",
+                  },
+                })}
+              />
 
-        <h1>multi select</h1>
-        <MultiSelect options={multiOptions} />
+              <h1>single select</h1>
+              <SingleSelect options={options} />
 
-        <h1>date picker</h1>
-        <DatePicker />
+              <h1>multi select</h1>
+              <MultiSelect options={multiOptions} />
 
-        <h1>menu</h1>
-        <Menu options={menuOptions} />
-      </ThemeProvider>
-    </DynamicThemeContext.Provider>
+              <h1>date picker</h1>
+              <DatePicker />
+
+              <h1>menu</h1>
+              <Menu options={menuOptions} />
+            </ThemeProvider>
+          </DynamicThemeContext.Provider>
+        </Route>
+      </Switch>
+    </BrowserRouter>
   );
 };
 
