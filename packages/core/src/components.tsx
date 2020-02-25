@@ -3,26 +3,32 @@ import AutosizeInput, { AutosizeInputProps } from "react-input-autosize";
 
 import { simpleMemo, preventDefault } from "./utils";
 
-export const Input = React.forwardRef<HTMLInputElement, AutosizeInputProps>(
-  function Input(props, ref) {
-    return (
-      <AutosizeInput
-        ref={ref as any}
-        inputStyle={{
-          background: "0px center",
-          border: "0",
-          fontFamily: "inherit",
-          fontSize: "inherit",
-          opacity: 1,
-          outline: 0,
-          padding: 0,
-          color: "inherit",
-        }}
-        {...props}
-      />
-    );
-  },
-);
+// Using the generic type paramters on React.forwardRef results in weirdly
+// typed declaration files - every prop becomes required
+export const Input: React.ForwardRefExoticComponent<AutosizeInputProps &
+  React.RefAttributes<HTMLInputElement>> = React.forwardRef(function Input(
+  props,
+  ref,
+) {
+  return (
+    <AutosizeInput
+      ref={ref as any}
+      inputStyle={{
+        background: "0px center",
+        border: "0",
+        fontFamily: "inherit",
+        fontSize: "inherit",
+        opacity: 1,
+        outline: 0,
+        padding: 0,
+        color: "inherit",
+      }}
+      {...props}
+    />
+  );
+});
+
+export type InputProps = React.ComponentProps<typeof Input>;
 
 export type OptionProps<T> = JSX.IntrinsicElements["div"] & {
   option: T;

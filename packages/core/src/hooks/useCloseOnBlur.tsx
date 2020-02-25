@@ -5,7 +5,6 @@ export const useCloseOnBlur = (
   menuRef: React.MutableRefObject<HTMLElement | null>,
   handleClose: () => void,
 ) => ({ relatedTarget }: React.FocusEvent): void => {
-    console.log(document.activeElement, relatedTarget);
   if (
     relatedTarget &&
     menuRef.current?.contains(relatedTarget as HTMLElement)
