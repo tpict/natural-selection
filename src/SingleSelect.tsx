@@ -1,13 +1,16 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 
 import {
-  Input,
-  useDefaultKeyDownHandler,
+  useCallbackRef,
   useCloseOnBlur,
+  useDefaultKeyDownHandler,
+  useFocusedRef,
   useLabelFilter,
   useManagedFocus,
-  useScrollToFocused,
+  useOpenMenuOnType,
   useScrollCaptor,
+  useScrollToFocused,
+  useToggle,
 } from "@natural-selection/core";
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
@@ -22,40 +25,35 @@ export const SingleSelect = <T extends { value: string; label: string }>({
   options,
   ...rest
 }: SingleSelectProps<T>): React.ReactElement => {
-  const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
+  const [isMenuOpen, setMenuOpen, toggleMenuOpen] = useToggle(false);
+  const [inputValue, setInputValue] = useState("");
+  useOpenMenuOnType(inputValue, setMenuOpen);
 
   const [value, setValue_] = useState<T | null>(null);
-  const setValue: typeof setValue_ = useCallback((...args) => {
-    setValue_(...args);
-    setMenuOpen(false);
-  }, []);
-
-  const [inputValue, setInputValue] = useState("");
-
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-
-  useScrollCaptor(menuRef, isMenuOpen);
-
-  const placementStyles = useMenuPlacementStyles(isMenuOpen, menuRef, {
-    maxHeight: 300,
-    minHeight: 140,
-  });
-
-  const { focused, setFocused, handleOptionRef, focusedRef } = useManagedFocus(
-    options,
-    isMenuOpen,
+  const setValue: typeof setValue_ = useCallback(
+    (...args) => {
+      setValue_(...args);
+      setInputValue("");
+      setMenuOpen(false);
+    },
+    [setMenuOpen],
   );
 
+  const menuRef = useCallbackRef();
+
+  useScrollCaptor(menuRef.current);
+
+  const placementStyles = useMenuPlacementStyles(menuRef.current);
+  const filteredOptions = useLabelFilter(options, inputValue);
+  const [focused, setFocused] = useManagedFocus(filteredOptions);
+  const [focusedRef, handleOptionRef] = useFocusedRef(focused);
   const scrollToFocusedOnUpdate = useScrollToFocused(
-    isMenuOpen,
-    focused,
-    menuRef,
+    menuRef.current,
     focusedRef,
   );
 
   const handleKeyDownDefault = useDefaultKeyDownHandler(
-    options,
+    filteredOptions,
     {
       focused,
       isMenuOpen,
@@ -86,51 +84,23 @@ export const SingleSelect = <T extends { value: string; label: string }>({
     [handleKeyDownDefault, inputValue, setValue],
   );
 
-  useEffect(() => {
-    setInputValue("");
-  }, [value]);
-
-  useEffect(() => {
-    if (inputValue) {
-      setMenuOpen(true);
-    }
-  }, [inputValue]);
-
-  const filteredOptions = useLabelFilter(
-    options,
-    focused,
-    setFocused,
-    inputValue,
-  );
-
-  const handleInputBlur = useCloseOnBlur(inputRef, menuRef, () =>
-    setMenuOpen(false),
-  );
+  const handleInputBlur = useCloseOnBlur(menuRef, () => setMenuOpen(false));
 
   return (
     <Container onKeyDown={handleKeyDown}>
       <Control
-        onMouseDown={event => {
-          event.preventDefault();
-          setMenuOpen(!isMenuOpen);
-          inputRef.current?.focus();
-        }}
+        value={inputValue}
+        aria-label={rest["aria-label"]}
+        onMouseDown={toggleMenuOpen}
+        onInputChange={setInputValue}
+        onBlur={handleInputBlur}
       >
         {!inputValue && value?.label}
         {!inputValue && !value && <Placeholder>Pick an option</Placeholder>}
-        <Input
-          value={inputValue}
-          ref={inputRef}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-            setInputValue(event.currentTarget.value);
-          }}
-          onBlur={handleInputBlur}
-          aria-label={rest["aria-label"]}
-        />
       </Control>
 
       {isMenuOpen && (
-        <Menu ref={menuRef} css={placementStyles}>
+        <Menu ref={menuRef.callback} css={placementStyles}>
           {filteredOptions.map(option => (
             <Option
               key={option.value}

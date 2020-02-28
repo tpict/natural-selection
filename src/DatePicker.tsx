@@ -1,19 +1,14 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import range from "lodash-es/range";
 import { parseDate as chrono } from "chrono-node";
 import { useTheme } from "@emotion/react";
 import {
-  Input,
   useDefaultKeyDownHandler,
+  useCallbackRef,
   useCloseOnBlur,
   useManagedFocus,
+  useOpenMenuOnType,
 } from "@natural-selection/core";
 
 import { Menu, Option, Control, Container, Placeholder } from "./components";
@@ -132,6 +127,8 @@ const parseDate = (inputValue: string): Dayjs | null => {
 
 export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
   const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
+  const [inputValue, setInputValue] = useState("");
+  useOpenMenuOnType(inputValue, setMenuOpen);
 
   const [mode, setMode] = useState<"day" | "month" | "year">("day");
 
@@ -174,7 +171,7 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
     }
   }, [mode, dayOptions, yearOptions]);
 
-  const { focused, setFocused } = useManagedFocus(options, isMenuOpen);
+  const [focused, setFocused] = useManagedFocus(options);
 
   const [value, setValue_] = useState<Dayjs | null>(null);
   const setValue = useCallback(
@@ -187,6 +184,7 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
         case "day":
           setValue_(value.value);
           setMenuOpen(false);
+          setInputValue("");
           return;
         case "month":
           setDayOptions(getDayOptions(firstOfMonth.month(value.value)));
@@ -209,15 +207,11 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
     [firstOfMonth],
   );
 
-  const [inputValue, setInputValue] = useState("");
-
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const menuRef = useCallbackRef<HTMLDivElement>();
 
   const theme = useTheme();
   const { maxHeight: _m, ...position } = useMenuPlacementStyles(
-    isMenuOpen,
-    menuRef,
+    menuRef.current,
     {
       maxHeight: 500,
       minHeight: 500,
@@ -342,19 +336,7 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
     }
   }, [value, firstOfMonth]);
 
-  useEffect(() => {
-    setInputValue("");
-  }, [value]);
-
-  useEffect(() => {
-    if (inputValue) {
-      setMenuOpen(true);
-    }
-  }, [inputValue]);
-
-  const handleInputBlur = useCloseOnBlur(inputRef, menuRef, () =>
-    setMenuOpen(false),
-  );
+  const handleInputBlur = useCloseOnBlur(menuRef, () => setMenuOpen(false));
 
   const optionsNode = (() => {
     switch (mode) {
@@ -445,10 +427,12 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
   return (
     <Container onKeyDown={handleKeyDown}>
       <Control
-        onMouseDown={useCallback(event => {
-          event.preventDefault();
+        value={inputValue}
+        aria-label={props["aria-label"]}
+        onInputChange={setInputValue}
+        onBlur={handleInputBlur}
+        onMouseDown={useCallback(() => {
           setMenuOpen(isMenuOpen => !isMenuOpen);
-          inputRef.current?.focus();
         }, [])}
       >
         {!inputValue &&
@@ -461,15 +445,6 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
             sameElse: "MM/DD/YYYY",
           })}
         {!inputValue && !value && <Placeholder>Pick a date</Placeholder>}
-        <Input
-          value={inputValue}
-          ref={inputRef}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-            setInputValue(event.currentTarget.value);
-          }}
-          onBlur={handleInputBlur}
-          aria-label={props["aria-label"]}
-        />
       </Control>
 
       {isMenuOpen && (

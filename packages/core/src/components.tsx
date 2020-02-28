@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useRef } from "react";
 import AutosizeInput, { AutosizeInputProps } from "react-input-autosize";
 
 import { simpleMemo, preventDefault } from "./utils";
@@ -30,10 +30,59 @@ export const Input: React.ForwardRefExoticComponent<AutosizeInputProps &
 
 export type InputProps = React.ComponentProps<typeof Input>;
 
+export type ControlProps = InputProps & {
+  onInputChange: (value: string) => void;
+};
+
+export const Control: React.FC<ControlProps> = ({
+  children,
+  className,
+  onMouseDown,
+  onMouseUp,
+  onClick,
+  onChange,
+  onInputChange,
+  ...rest
+}) => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  return (
+    <div
+      onMouseDown={useCallback(
+        event => {
+          event.preventDefault();
+          inputRef.current?.focus();
+          onMouseDown?.(event);
+        },
+        [onMouseDown],
+      )}
+      {...{
+        className,
+        onMouseUp,
+        onClick,
+      }}
+    >
+      {children}
+      <Input
+        ref={inputRef}
+        onChange={useCallback(
+          event => {
+            onChange?.(event);
+            onInputChange?.(event.currentTarget.value);
+          },
+          [onChange, onInputChange],
+        )}
+        {...rest}
+      />
+    </div>
+  );
+};
+
 export type OptionProps<T> = JSX.IntrinsicElements["div"] & {
   option: T;
   handleFocus: (option: T | null) => void;
   handleSelect: (option: T | null) => void;
+  innerRef?: React.Ref<HTMLDivElement>;
 };
 
 export const Option = simpleMemo(function Option<T>({
@@ -42,9 +91,7 @@ export const Option = simpleMemo(function Option<T>({
   handleSelect,
   innerRef,
   ...rest
-}: OptionProps<T> & {
-  innerRef?: React.MutableRefObject<HTMLDivElement | null>;
-}) {
+}: OptionProps<T>) {
   const onClick = useCallback(
     (event: React.SyntheticEvent) => {
       event.stopPropagation();

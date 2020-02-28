@@ -8,9 +8,8 @@ import {
 } from "@natural-selection/core";
 
 export const useMenuPlacementStyles = (
-  isMenuOpen: boolean,
-  menuRef: React.MutableRefObject<HTMLElement | null>,
-  options: Omit<MenuPlacementOptions, "controlHeight">,
+  menuRef: HTMLElement | null,
+  options?: Partial<MenuPlacementOptions>,
 ): CSSObject => {
   const theme = useTheme();
 
@@ -24,9 +23,11 @@ export const useMenuPlacementStyles = (
     );
   }, [theme]);
 
-  const { placement, maxHeight } = useMenuPlacement(isMenuOpen, menuRef, {
+  const { placement, maxHeight } = useMenuPlacement(menuRef, {
     ...options,
-    controlHeight,
+    controlHeight: options?.controlHeight ?? controlHeight,
+    maxHeight: options?.maxHeight ?? theme.space.select.maxHeight,
+    minHeight: options?.minHeight ?? theme.space.select.minHeight,
   });
 
   return {

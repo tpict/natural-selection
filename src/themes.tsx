@@ -18,6 +18,10 @@ export const blueOnPink = {
     root: 1.5,
   },
   space: {
+    select: {
+      maxHeight: 300,
+      minHeight: 140,
+    },
     control: {
       padding: "0.25rem",
       border: "0.125rem",

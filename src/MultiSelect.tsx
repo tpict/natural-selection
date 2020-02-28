@@ -1,13 +1,16 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 
 import {
-  Input,
-  useDefaultKeyDownHandler,
+  useCallbackRef,
   useCloseOnBlur,
+  useDefaultKeyDownHandler,
+  useFocusedRef,
   useLabelFilter,
   useManagedFocus,
-  useScrollToFocused,
+  useOpenMenuOnType,
   useScrollCaptor,
+  useScrollToFocused,
+  useToggle,
 } from "@natural-selection/core";
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
@@ -22,16 +25,14 @@ export const MultiSelect = <T extends { label: string; value: string }>({
   options,
   ...rest
 }: MultiSelectProps<T>): React.ReactElement => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
+  const menuRef = useCallbackRef();
+  const [isMenuOpen, setMenuOpen, toggleMenuOpen] = useToggle(false);
   const [value, setValue] = useState<T[]>([]);
   const [inputValue, setInputValue] = useState("");
 
-  const placementStyles = useMenuPlacementStyles(isMenuOpen, menuRef, {
-    maxHeight: 300,
-    minHeight: 140,
-  });
+  useOpenMenuOnType(inputValue, setMenuOpen);
+
+  const placementStyles = useMenuPlacementStyles(menuRef.current);
 
   const toggleValue = (selectedOption: T | null): void => {
     if (!selectedOption) {
@@ -47,22 +48,18 @@ export const MultiSelect = <T extends { label: string; value: string }>({
     });
   };
 
-  const { focused, setFocused, handleOptionRef, focusedRef } = useManagedFocus(
-    options,
-    isMenuOpen,
-  );
+  const filteredOptions = useLabelFilter(options, inputValue);
 
-  useScrollCaptor(menuRef, isMenuOpen);
-
+  const [focused, setFocused] = useManagedFocus(filteredOptions);
+  const [focusedRef, handleOptionRef] = useFocusedRef(focused);
+  useScrollCaptor(menuRef.current);
   const scrollToFocusedOnUpdate = useScrollToFocused(
-    isMenuOpen,
-    focused,
-    menuRef,
+    menuRef.current,
     focusedRef,
   );
 
   const handleKeyDownDefault = useDefaultKeyDownHandler(
-    options,
+    filteredOptions,
     { focused, isMenuOpen, inputValue },
     {
       handleValueChange: toggleValue,
@@ -89,44 +86,24 @@ export const MultiSelect = <T extends { label: string; value: string }>({
     [handleKeyDownDefault, inputValue],
   );
 
-  useEffect(() => {
-    setInputValue("");
-  }, [value]);
-
-  const filteredOptions = useLabelFilter(
-    options,
-    focused,
-    setFocused,
-    inputValue,
-  );
-
   return (
     <Container onKeyDown={handleKeyDown}>
       <Control
-        onMouseDown={event => {
-          event.preventDefault();
-          inputRef.current?.focus();
-          setMenuOpen(!isMenuOpen);
-        }}
+        value={inputValue}
+        aria-label={rest["aria-label"]}
+        onBlur={useCloseOnBlur(menuRef, () => setMenuOpen(false))}
+        onInputChange={setInputValue}
+        onMouseDown={toggleMenuOpen}
       >
         {value.map(({ label }) => label).join(", ")}
         {!!value.length && isMenuOpen && ", "}
         {!value.length && !inputValue && (
           <Placeholder>Select multiple options</Placeholder>
         )}
-        <Input
-          value={inputValue}
-          ref={inputRef}
-          onChange={event => {
-            setInputValue(event.currentTarget.value);
-          }}
-          onBlur={useCloseOnBlur(inputRef, menuRef, () => setMenuOpen(false))}
-          aria-label={rest["aria-label"]}
-        />
       </Control>
 
       {isMenuOpen && (
-        <Menu ref={menuRef} css={placementStyles}>
+        <Menu ref={menuRef.callback} css={placementStyles}>
           {filteredOptions.map(option => {
             const isActive = value.includes(option);
 

@@ -1,5 +1,7 @@
 import React from "react";
 import {
+  Control as BaseControl,
+  ControlProps as BaseControlProps,
   Option as BaseOption,
   OptionProps as BaseOptionProps,
 } from "@natural-selection/core";
@@ -16,9 +18,7 @@ export function Option<T>({
   isFocused,
   innerRef,
   ...rest
-}: OptionProps<T> & {
-  innerRef?: React.MutableRefObject<HTMLDivElement | null>;
-}): React.ReactElement {
+}: OptionProps<T>): React.ReactElement {
   return (
     <BaseOption
       {...rest}
@@ -51,8 +51,8 @@ export const Container: React.FC<JSX.IntrinsicElements["div"]> = props => (
   />
 );
 
-export const Control: React.FC<JSX.IntrinsicElements["div"]> = props => (
-  <div
+export const Control: React.FC<BaseControlProps> = props => (
+  <BaseControl
     css={theme => ({
       cursor: "pointer",
       padding: theme.space.control.padding,

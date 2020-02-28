@@ -1,16 +1,12 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import flatMapDeep from "lodash-es/flatMapDeep";
 import {
-  Input,
-  useDefaultKeyDownHandler,
+  useCallbackRef,
   useCloseOnBlur,
+  useDefaultKeyDownHandler,
   useManagedFocus,
+  useOpenMenuOnType,
+  useToggle,
 } from "@natural-selection/core";
 
 import {
@@ -130,22 +126,34 @@ type MultiSelectProps = {
 };
 
 export const Menu: React.FC<MultiSelectProps> = ({ options }) => {
-  const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
-  const [value, setValue] = useState<SelectableMenuOptionType | null>(null);
+  const [isMenuOpen, setMenuOpen, toggleMenuOpen] = useToggle(false);
+  const [value, setValue_] = useState<SelectableMenuOptionType | null>(null);
   const [inputValue, setInputValue] = useState("");
+  useOpenMenuOnType(inputValue, setMenuOpen);
 
-  const handleSelect = useCallback((option: MenuOptionType | null): void => {
-    if (!option || !isSubmenu(option)) {
-      setValue(option);
-    }
-  }, []);
+  const setValue: typeof setValue_ = useCallback(
+    (...args) => {
+      setValue_(...args);
+      setInputValue("");
+      setMenuOpen(false);
+    },
+    [setMenuOpen],
+  );
 
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const handleSelect = useCallback(
+    (option: MenuOptionType | null): void => {
+      if (!option || !isSubmenu(option)) {
+        setValue(option);
+      }
+    },
+    [setValue],
+  );
+
+  const menuRef = useCallbackRef<HTMLDivElement>();
 
   const flatOptions = useMemo(() => flattenOptions(options), [options]);
 
-  const { focused, setFocused } = useManagedFocus(flatOptions, isMenuOpen);
+  const [focused, setFocused] = useManagedFocus(flatOptions);
 
   useEffect(() => {
     const option = flatOptions.find(option =>
@@ -184,46 +192,21 @@ export const Menu: React.FC<MultiSelectProps> = ({ options }) => {
         handleKeyDownDefault(event);
       }
     },
-    [handleKeyDownDefault, inputValue],
+    [setValue, handleKeyDownDefault, inputValue],
   );
 
-  useEffect(() => {
-    setInputValue("");
-  }, [value]);
-
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [value]);
-
-  useEffect(() => {
-    if (inputValue) {
-      setMenuOpen(true);
-    }
-  }, [inputValue]);
-
-  const handleInputBlur = useCloseOnBlur(inputRef, menuRef, () =>
-    setMenuOpen(false),
-  );
+  const handleInputBlur = useCloseOnBlur(menuRef, () => setMenuOpen(false));
 
   return (
     <Container onKeyDown={handleKeyDown}>
       <Control
-        onMouseDown={event => {
-          event.preventDefault();
-          setMenuOpen(!isMenuOpen);
-          inputRef.current?.focus();
-        }}
+        value={inputValue}
+        onMouseDown={toggleMenuOpen}
+        onInputChange={setInputValue}
+        onBlur={handleInputBlur}
       >
         {!inputValue && value?.value}
         {!inputValue && !value && <Placeholder>Pick an option</Placeholder>}
-        <Input
-          value={inputValue}
-          ref={inputRef}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-            setInputValue(event.currentTarget.value);
-          }}
-          onBlur={handleInputBlur}
-        />
       </Control>
 
       {isMenuOpen && (

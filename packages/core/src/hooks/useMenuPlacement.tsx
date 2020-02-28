@@ -14,8 +14,7 @@ export type MenuPlacementOptions = {
 };
 
 export const useMenuPlacement = (
-  isMenuOpen: boolean,
-  menuRef: React.MutableRefObject<HTMLElement | null>,
+  menuRef: HTMLElement | null,
   {
     maxHeight,
     minHeight,
@@ -25,20 +24,16 @@ export const useMenuPlacement = (
     isFixedPosition = false,
   }: MenuPlacementOptions,
 ): MenuState => {
-  const prevMenuOpen = usePrevious(isMenuOpen);
-  const menuJustOpened = isMenuOpen && !prevMenuOpen;
+  const prevRef = usePrevious(menuRef);
+  const menuJustOpened = menuRef && !prevRef;
 
   const [menuPlacement, setMenuPlacement] = useState<MenuState>({
-    maxHeight: 300,
-    placement: "bottom",
+    maxHeight,
+    placement,
   });
 
   useLayoutEffect(() => {
-    if (!menuRef.current) {
-      return;
-    }
-
-    if (!menuJustOpened) {
+    if (!menuJustOpened || !menuRef) {
       return;
     }
 
@@ -46,17 +41,16 @@ export const useMenuPlacement = (
       getMenuPlacement({
         maxHeight,
         minHeight,
-        menuEl: menuRef.current,
+        menuEl: menuRef,
         placement,
         shouldScroll,
         isFixedPosition,
         theme: { spacing: { controlHeight } },
       }),
     );
-    // refs aren't an effect dependency
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     menuJustOpened,
+    menuRef,
     maxHeight,
     minHeight,
     placement,

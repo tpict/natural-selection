@@ -1,32 +1,19 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const defaultGetIsFocusable = <T extends object & { isDisabled?: boolean }>({
   isDisabled,
 }: T): boolean => !isDisabled;
 
-const getDefaultInitialFocus = <T extends unknown>(options: T[]): T =>
-  options[0];
-
 export const useManagedFocus = <T extends object & { isDisabled?: boolean }>(
   options: T[],
-  isMenuOpen: boolean,
   {
     getIsFocusable = defaultGetIsFocusable,
-    initialFocus,
   }: {
     getIsFocusable?: (option: T) => boolean;
     initialFocus?: T;
   } = {},
-): {
-  focused: T | null;
-  setFocused: (focused: T | null) => void;
-  focusedRef: React.MutableRefObject<HTMLDivElement | null>;
-  handleOptionRef: (
-    option: T,
-  ) => { innerRef: React.MutableRefObject<HTMLDivElement | null> } | undefined;
-} => {
-  const [focused, setFocused_] = useState<T | null>(null);
-  const focusedRef = useRef<HTMLDivElement | null>(null);
+): [T | null, (focused: T | null) => void] => {
+  const [focused, setFocused_] = useState<T | null>(options[0] || null);
 
   const setFocused = useCallback(
     (focused: T | null): void => {
@@ -44,33 +31,11 @@ export const useManagedFocus = <T extends object & { isDisabled?: boolean }>(
   );
 
   useEffect(() => {
-    if (isMenuOpen) {
-      const focusableOptions = options.filter(getIsFocusable);
-      if (!initialFocus) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        initialFocus = getDefaultInitialFocus(focusableOptions);
-      }
-
-      setFocused(initialFocus);
-    } else {
-      setFocused(null);
+    if (!focused || !options.includes(focused)) {
+      const newFocused = options.filter(getIsFocusable)?.[0] || null;
+      setFocused_(newFocused);
     }
-  }, [isMenuOpen, options, getIsFocusable, setFocused]);
+  }, [options, getIsFocusable, focused]);
 
-  const handleOptionRef = useCallback(
-    (
-      option: T,
-    ):
-      | { innerRef: React.MutableRefObject<HTMLDivElement | null> }
-      | undefined => {
-      if (option === focused) {
-        return { innerRef: focusedRef };
-      }
-
-      return;
-    },
-    [focused],
-  );
-
-  return { focused, setFocused, focusedRef, handleOptionRef };
+  return [focused, setFocused];
 };

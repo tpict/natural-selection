@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 enum ScrollState {
   Top,
@@ -9,22 +9,13 @@ enum ScrollState {
 // NOTE This behavior is provided by
 // https://developer.mozilla.org/en-US/docs/Web/CSS/overscroll-behavior
 // Waiting on Safari support
-export const useScrollCaptor = (
-  target: React.MutableRefObject<HTMLElement | null>,
-  isMenuOpen = true,
-): void => {
+export const useScrollCaptor = (node: HTMLElement | null): void => {
   const scrollState = useRef<ScrollState>(ScrollState.Neither);
 
   useEffect(() => {
-    if (!isMenuOpen) {
+    if (!node) {
       return;
     }
-
-    if (!target.current) {
-      throw new Error();
-    }
-
-    const { current: node } = target;
 
     const cancelScrollEvent = (event: WheelEvent): void => {
       event.preventDefault();
@@ -61,5 +52,5 @@ export const useScrollCaptor = (
 
     return () => node.removeEventListener("wheel", onWheel);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMenuOpen]);
+  }, [node]);
 };
