@@ -1,6 +1,6 @@
 {
   "name": "@natural-selection/core",
-  "version": "0.1.0-rc7",
+  "version": "0.1.0-rc8",
   "description": "Core hooks and components for Natural Selection",
   "main": "lib/index.js",
   "repository": {
@@ -23,11 +23,11 @@
     "@types/react": "^16.9.22",
     "@types/react-dom": "^16.9.5",
     "@types/react-input-autosize": "^2.0.1",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
     "typescript": "^3.8.2"
   },
   "dependencies": {
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
     "react-input-autosize": "^2.2.2"
   }
 }
