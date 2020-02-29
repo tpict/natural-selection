@@ -3,7 +3,6 @@ import flatMapDeep from "lodash-es/flatMapDeep";
 import {
   useCallbackRef,
   useCloseOnBlur,
-  useDefaultKeyDownHandler,
   useManagedFocus,
   useOpenMenuOnType,
   useToggle,
@@ -17,6 +16,7 @@ import {
   Control,
   Placeholder,
 } from "./components";
+import { singleValueKeyHandler } from "./utils";
 
 type SubmenuOptionType = { label: string; options: MenuOptionType[] };
 type SelectableMenuOptionType = { label: string; value: string };
@@ -153,7 +153,9 @@ export const Menu: React.FC<MultiSelectProps> = ({ options }) => {
 
   const flatOptions = useMemo(() => flattenOptions(options), [options]);
 
-  const [focused, setFocused] = useManagedFocus(flatOptions);
+  const [focused, setFocused, focusRelativeOption] = useManagedFocus(
+    flatOptions,
+  );
 
   useEffect(() => {
     const option = flatOptions.find(option =>
@@ -164,41 +166,26 @@ export const Menu: React.FC<MultiSelectProps> = ({ options }) => {
     }
   }, [inputValue, flatOptions, setFocused]);
 
-  const handleKeyDownDefault = useDefaultKeyDownHandler(
-    flatOptions,
-    {
-      focused,
-      isMenuOpen,
-      inputValue,
-    },
-    {
-      handleValueChange: handleSelect,
-      handleFocusChange: setFocused,
-      handleInputChange: setInputValue,
-      setMenuOpen,
-    },
-  );
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent): void => {
-      if (event.key === "Backspace") {
-        if (inputValue) {
-          return;
-        }
-
-        setValue(null);
-        event.preventDefault();
-      } else {
-        handleKeyDownDefault(event);
-      }
-    },
-    [setValue, handleKeyDownDefault, inputValue],
-  );
-
   const handleInputBlur = useCloseOnBlur(menuRef, () => setMenuOpen(false));
 
   return (
-    <Container onKeyDown={handleKeyDown}>
+    <Container
+      onKeyDown={event =>
+        singleValueKeyHandler(
+          event,
+          {
+            focused,
+            isMenuOpen,
+          },
+          {
+            focusRelativeOption,
+            handleValueChange: handleSelect,
+            handleInputChange: setInputValue,
+            setMenuOpen,
+          },
+        )
+      }
+    >
       <Control
         value={inputValue}
         onMouseDown={toggleMenuOpen}

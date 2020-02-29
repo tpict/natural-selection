@@ -4,7 +4,6 @@ import range from "lodash-es/range";
 import { parseDate as chrono } from "chrono-node";
 import { useTheme } from "@emotion/react";
 import {
-  useDefaultKeyDownHandler,
   useCallbackRef,
   useCloseOnBlur,
   useManagedFocus,
@@ -13,7 +12,7 @@ import {
 
 import { Menu, Option, Control, Container, Placeholder } from "./components";
 import { useMenuPlacementStyles } from "./hooks";
-import { UnreachableCaseError } from "./util";
+import { UnreachableCaseError, singleValueKeyHandler } from "./utils";
 
 type DayOptionType = {
   type: "day";
@@ -171,7 +170,7 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
     }
   }, [mode, dayOptions, yearOptions]);
 
-  const [focused, setFocused] = useManagedFocus(options);
+  const [focused, setFocused, focusRelativeOption] = useManagedFocus(options);
 
   const [value, setValue_] = useState<Dayjs | null>(null);
   const setValue = useCallback(
@@ -245,21 +244,6 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
     setFocused(optionToFocus);
   }, [inputValue, firstOfMonth, dayOptions, setFocused, value]);
 
-  const handleKeyDownDefault = useDefaultKeyDownHandler(
-    options,
-    {
-      focused,
-      isMenuOpen,
-      inputValue,
-    },
-    {
-      handleValueChange: setValue,
-      handleFocusChange: setFocused,
-      handleInputChange: setInputValue,
-      setMenuOpen,
-    },
-  );
-
   const handleKeyDown = (event: React.KeyboardEvent): void => {
     let horizontalMotion: number;
     let verticalMotion: number;
@@ -281,48 +265,32 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
         throw new UnreachableCaseError(mode);
     }
 
-    let index: number;
-
     switch (event.key) {
-      case "Backspace":
-        if (inputValue) {
-          return;
-        }
-
-        setValue(null);
-        break;
       case "ArrowLeft":
-        index = focused
-          ? Math.max(options.indexOf(focused) - horizontalMotion, 0)
-          : 0;
-        setFocused(options[index]);
+        focusRelativeOption(-horizontalMotion);
         break;
       case "ArrowRight":
-        index = focused
-          ? Math.min(
-              options.indexOf(focused) + horizontalMotion,
-              options.length - 1,
-            )
-          : 0;
-        setFocused(options[index]);
+        focusRelativeOption(horizontalMotion);
         break;
       case "ArrowUp":
-        index = focused
-          ? Math.max(options.indexOf(focused) - verticalMotion, 0)
-          : 0;
-        setFocused(options[index]);
+        focusRelativeOption(-verticalMotion);
         break;
       case "ArrowDown":
-        index = focused
-          ? Math.min(
-              options.indexOf(focused) + verticalMotion,
-              options.length - 1,
-            )
-          : 0;
-        setFocused(options[index]);
+        focusRelativeOption(verticalMotion);
         break;
       default:
-        handleKeyDownDefault(event);
+        singleValueKeyHandler(
+          event,
+          {
+            focused,
+            isMenuOpen,
+          },
+          {
+            handleValueChange: setValue,
+            handleInputChange: setInputValue,
+            setMenuOpen,
+          },
+        );
         return;
     }
 

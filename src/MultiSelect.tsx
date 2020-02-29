@@ -1,9 +1,8 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 
 import {
   useCallbackRef,
   useCloseOnBlur,
-  useDefaultKeyDownHandler,
   useFocusedRef,
   useLabelFilter,
   useManagedFocus,
@@ -11,6 +10,7 @@ import {
   useScrollCaptor,
   useScrollToFocused,
   useToggle,
+  defaultKeyDownHandler,
 } from "@natural-selection/core";
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
@@ -50,7 +50,9 @@ export const MultiSelect = <T extends { label: string; value: string }>({
 
   const filteredOptions = useLabelFilter(options, inputValue);
 
-  const [focused, setFocused] = useManagedFocus(filteredOptions);
+  const [focused, setFocused, focusRelativeOption] = useManagedFocus(
+    filteredOptions,
+  );
   const [focusedRef, handleOptionRef] = useFocusedRef(focused);
   useScrollCaptor(menuRef.current);
   const scrollToFocusedOnUpdate = useScrollToFocused(
@@ -58,33 +60,28 @@ export const MultiSelect = <T extends { label: string; value: string }>({
     focusedRef,
   );
 
-  const handleKeyDownDefault = useDefaultKeyDownHandler(
-    filteredOptions,
-    { focused, isMenuOpen, inputValue },
-    {
-      handleValueChange: toggleValue,
-      handleFocusChange: setFocused,
-      handleInputChange: setInputValue,
-      setMenuOpen,
-      scrollToFocusedOnUpdate,
-    },
-  );
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent): void => {
-      if (event.key === "Backspace") {
-        if (inputValue) {
-          return;
-        }
-
-        setValue(value => value.slice(0, value.length - 1));
-        event.preventDefault();
-      } else {
-        handleKeyDownDefault(event);
+  const handleKeyDown = (event: React.KeyboardEvent): void => {
+    if (event.key === "Backspace") {
+      if (inputValue) {
+        return;
       }
-    },
-    [handleKeyDownDefault, inputValue],
-  );
+
+      setValue(value => value.slice(0, value.length - 1));
+      event.preventDefault();
+    } else {
+      defaultKeyDownHandler(
+        event,
+        { focused, isMenuOpen },
+        {
+          focusRelativeOption,
+          handleValueChange: toggleValue,
+          handleInputChange: setInputValue,
+          setMenuOpen,
+          scrollToFocusedOnUpdate,
+        },
+      );
+    }
+  };
 
   return (
     <Container onKeyDown={handleKeyDown}>

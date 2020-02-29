@@ -3,7 +3,6 @@ import React, { useState, useCallback } from "react";
 import {
   useCallbackRef,
   useCloseOnBlur,
-  useDefaultKeyDownHandler,
   useFocusedRef,
   useLabelFilter,
   useManagedFocus,
@@ -15,6 +14,7 @@ import {
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
 import { useMenuPlacementStyles } from "./hooks";
+import { singleValueKeyHandler } from "./utils";
 
 type SingleSelectProps<T> = {
   "aria-label"?: string;
@@ -45,49 +45,33 @@ export const SingleSelect = <T extends { value: string; label: string }>({
 
   const placementStyles = useMenuPlacementStyles(menuRef.current);
   const filteredOptions = useLabelFilter(options, inputValue);
-  const [focused, setFocused] = useManagedFocus(filteredOptions);
+  const [focused, setFocused, focusRelativeOption] = useManagedFocus(
+    filteredOptions,
+  );
   const [focusedRef, handleOptionRef] = useFocusedRef(focused);
   const scrollToFocusedOnUpdate = useScrollToFocused(
     menuRef.current,
     focusedRef,
   );
 
-  const handleKeyDownDefault = useDefaultKeyDownHandler(
-    filteredOptions,
-    {
-      focused,
-      isMenuOpen,
-      inputValue,
-    },
-    {
-      handleValueChange: setValue,
-      handleFocusChange: setFocused,
-      handleInputChange: setInputValue,
-      setMenuOpen,
-      scrollToFocusedOnUpdate,
-    },
-  );
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent): void => {
-      if (event.key === "Backspace") {
-        if (inputValue) {
-          return;
-        }
-
-        setValue(null);
-        event.preventDefault();
-      } else {
-        handleKeyDownDefault(event);
-      }
-    },
-    [handleKeyDownDefault, inputValue, setValue],
-  );
-
   const handleInputBlur = useCloseOnBlur(menuRef, () => setMenuOpen(false));
 
   return (
-    <Container onKeyDown={handleKeyDown}>
+    <Container
+      onKeyDown={event =>
+        singleValueKeyHandler(
+          event,
+          { focused, isMenuOpen },
+          {
+            focusRelativeOption,
+            handleValueChange: setValue,
+            handleInputChange: setInputValue,
+            setMenuOpen,
+            scrollToFocusedOnUpdate,
+          },
+        )
+      }
+    >
       <Control
         value={inputValue}
         aria-label={rest["aria-label"]}

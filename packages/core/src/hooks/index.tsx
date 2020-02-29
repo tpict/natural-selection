@@ -1,6 +1,5 @@
 export * from "./useCallbackRef";
 export * from "./useCloseOnBlur";
-export * from "./useDefaultKeyDownHandler";
 export * from "./useFocusedRef";
 export * from "./useLabelFilter";
 export * from "./useManagedFocus";
