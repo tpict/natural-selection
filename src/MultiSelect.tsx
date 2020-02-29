@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 
 import {
   useCallbackRef,
-  useCloseOnBlur,
   useFocusedRef,
   useLabelFilter,
   useManagedFocus,
@@ -88,7 +87,8 @@ export const MultiSelect = <T extends { label: string; value: string }>({
       <Control
         value={inputValue}
         aria-label={rest["aria-label"]}
-        onBlur={useCloseOnBlur(menuRef, () => setMenuOpen(false))}
+        menuRef={menuRef.current}
+        onBlur={useCallback(() => setMenuOpen(false), [setMenuOpen])}
         onInputChange={setInputValue}
         onMouseDown={toggleMenuOpen}
       >

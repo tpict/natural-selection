@@ -1,6 +1,7 @@
 import React, { useCallback, useRef } from "react";
 import AutosizeInput, { AutosizeInputProps } from "react-input-autosize";
 
+import { useStickyBlur } from "./hooks";
 import { simpleMemo, preventDefault } from "./utils";
 
 // Using the generic type paramters on React.forwardRef results in weirdly
@@ -32,11 +33,14 @@ export type InputProps = React.ComponentProps<typeof Input>;
 
 export type ControlProps = InputProps & {
   onInputChange: (value: string) => void;
+  menuRef: HTMLElement | null;
 };
 
 export const Control: React.FC<ControlProps> = ({
   children,
+  menuRef,
   className,
+  onBlur,
   onMouseDown,
   onMouseUp,
   onClick,
@@ -45,9 +49,11 @@ export const Control: React.FC<ControlProps> = ({
   ...rest
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const handleBlur = useStickyBlur(menuRef, onBlur);
 
   return (
     <div
+      onBlur={handleBlur}
       onMouseDown={useCallback(
         event => {
           event.preventDefault();

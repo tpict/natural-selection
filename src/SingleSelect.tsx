@@ -2,7 +2,6 @@ import React, { useState, useCallback } from "react";
 
 import {
   useCallbackRef,
-  useCloseOnBlur,
   useFocusedRef,
   useLabelFilter,
   useManagedFocus,
@@ -54,8 +53,6 @@ export const SingleSelect = <T extends { value: string; label: string }>({
     focusedRef,
   );
 
-  const handleInputBlur = useCloseOnBlur(menuRef, () => setMenuOpen(false));
-
   return (
     <Container
       onKeyDown={event =>
@@ -77,7 +74,8 @@ export const SingleSelect = <T extends { value: string; label: string }>({
         aria-label={rest["aria-label"]}
         onMouseDown={toggleMenuOpen}
         onInputChange={setInputValue}
-        onBlur={handleInputBlur}
+        menuRef={menuRef.current}
+        onBlur={useCallback(() => setMenuOpen(false), [setMenuOpen])}
       >
         {!inputValue && value?.label}
         {!inputValue && !value && <Placeholder>Pick an option</Placeholder>}

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import flatMapDeep from "lodash-es/flatMapDeep";
 import {
   useCallbackRef,
-  useCloseOnBlur,
   useManagedFocus,
   useOpenMenuOnType,
   useToggle,
@@ -166,8 +165,6 @@ export const Menu: React.FC<MultiSelectProps> = ({ options }) => {
     }
   }, [inputValue, flatOptions, setFocused]);
 
-  const handleInputBlur = useCloseOnBlur(menuRef, () => setMenuOpen(false));
-
   return (
     <Container
       onKeyDown={event =>
@@ -188,9 +185,10 @@ export const Menu: React.FC<MultiSelectProps> = ({ options }) => {
     >
       <Control
         value={inputValue}
+        menuRef={menuRef.current}
         onMouseDown={toggleMenuOpen}
         onInputChange={setInputValue}
-        onBlur={handleInputBlur}
+        onBlur={useCallback(() => setMenuOpen(false), [setMenuOpen])}
       >
         {!inputValue && value?.value}
         {!inputValue && !value && <Placeholder>Pick an option</Placeholder>}

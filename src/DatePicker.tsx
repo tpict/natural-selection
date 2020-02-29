@@ -5,9 +5,9 @@ import { parseDate as chrono } from "chrono-node";
 import { useTheme } from "@emotion/react";
 import {
   useCallbackRef,
-  useCloseOnBlur,
   useManagedFocus,
   useOpenMenuOnType,
+  useToggle,
 } from "@natural-selection/core";
 
 import { Menu, Option, Control, Container, Placeholder } from "./components";
@@ -125,7 +125,7 @@ const parseDate = (inputValue: string): Dayjs | null => {
 };
 
 export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
-  const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
+  const [isMenuOpen, setMenuOpen, toggleMenuOpen] = useToggle(false);
   const [inputValue, setInputValue] = useState("");
   useOpenMenuOnType(inputValue, setMenuOpen);
 
@@ -304,8 +304,6 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
     }
   }, [value, firstOfMonth]);
 
-  const handleInputBlur = useCloseOnBlur(menuRef, () => setMenuOpen(false));
-
   const optionsNode = (() => {
     switch (mode) {
       case "day":
@@ -397,11 +395,10 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
       <Control
         value={inputValue}
         aria-label={props["aria-label"]}
+        menuRef={menuRef.current}
         onInputChange={setInputValue}
-        onBlur={handleInputBlur}
-        onMouseDown={useCallback(() => {
-          setMenuOpen(isMenuOpen => !isMenuOpen);
-        }, [])}
+        onBlur={useCallback(() => setMenuOpen(false), [])}
+        onMouseDown={toggleMenuOpen}
       >
         {!inputValue &&
           value?.calendar(undefined, {

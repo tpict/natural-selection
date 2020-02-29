@@ -1,5 +1,4 @@
 export * from "./useCallbackRef";
-export * from "./useCloseOnBlur";
 export * from "./useFocusedRef";
 export * from "./useLabelFilter";
 export * from "./useManagedFocus";
@@ -8,4 +7,5 @@ export * from "./useOpenMenuOnType";
 export * from "./usePrevious";
 export * from "./useScrollCaptor";
 export * from "./useScrollToFocused";
+export * from "./useStickyBlur";
 export * from "./useToggle";
