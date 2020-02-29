@@ -9,7 +9,10 @@ export const preventDefault = (event: React.SyntheticEvent): void =>
 
 export const defaultKeyDownHandler = <T extends object>(
   event: React.KeyboardEvent,
-  { focused, isMenuOpen }: { focused: T | null; isMenuOpen?: boolean },
+  {
+    focused = null,
+    isMenuOpen = true,
+  }: { focused?: T | null; isMenuOpen?: boolean },
   {
     focusRelativeOption = noop,
     handleValueChange = noop,
