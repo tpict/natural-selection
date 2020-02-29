@@ -54,10 +54,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
   );
   const [focusedRef, handleOptionRef] = useFocusedRef(focused);
   useScrollCaptor(menuRef.current);
-  const scrollToFocusedOnUpdate = useScrollToFocused(
-    menuRef.current,
-    focusedRef,
-  );
+  useScrollToFocused(menuRef.current, focusedRef);
 
   const handleKeyDown = (event: React.KeyboardEvent): void => {
     if (event.key === "Backspace") {
@@ -76,7 +73,6 @@ export const MultiSelect = <T extends { label: string; value: string }>({
           handleValueChange: toggleValue,
           handleInputChange: setInputValue,
           setMenuOpen,
-          scrollToFocusedOnUpdate,
         },
       );
     }

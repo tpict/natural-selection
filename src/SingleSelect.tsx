@@ -48,10 +48,7 @@ export const SingleSelect = <T extends { value: string; label: string }>({
     filteredOptions,
   );
   const [focusedRef, handleOptionRef] = useFocusedRef(focused);
-  const scrollToFocusedOnUpdate = useScrollToFocused(
-    menuRef.current,
-    focusedRef,
-  );
+  useScrollToFocused(menuRef.current, focusedRef);
 
   return (
     <Container
@@ -64,7 +61,6 @@ export const SingleSelect = <T extends { value: string; label: string }>({
             handleValueChange: setValue,
             handleInputChange: setInputValue,
             setMenuOpen,
-            scrollToFocusedOnUpdate,
           },
         )
       }

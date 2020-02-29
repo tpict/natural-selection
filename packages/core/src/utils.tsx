@@ -18,22 +18,18 @@ export const defaultKeyDownHandler = <T extends object>(
     handleValueChange = noop,
     handleInputChange = noop,
     setMenuOpen = noop,
-    scrollToFocusedOnUpdate = noop,
   }: {
     focusRelativeOption?: (direction: number) => void;
     handleValueChange?: (option: T | null) => void;
     handleInputChange?: (input: string) => void;
     setMenuOpen?: (isOpen: boolean) => void;
-    scrollToFocusedOnUpdate?: () => void;
   },
 ): void => {
   switch (event.key) {
     case "ArrowDown":
-      scrollToFocusedOnUpdate();
       focusRelativeOption(1);
       break;
     case "ArrowUp":
-      scrollToFocusedOnUpdate();
       focusRelativeOption(-1);
       break;
     case " ":
