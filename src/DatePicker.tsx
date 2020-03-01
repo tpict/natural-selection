@@ -413,7 +413,7 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
       </Control>
 
       {isMenuOpen && (
-        <Menu ref={menuRef} css={position}>
+        <Menu data-testid={"datepicker-menu"} ref={menuRef} css={position}>
           <div
             css={{
               display: "flex",

@@ -65,3 +65,10 @@ it("focuses options on text input", () => {
   });
   cy.queryByText("08/18/1994").should("exist");
 });
+
+it("doesn't close on whitespace click", () => {
+  // TODO fix this force, Cypress thinks the placeholder is covering it
+  cy.queryByLabelText("Date picker example").click({ force: true });
+  cy.queryByTestId("datepicker-menu").click(15, 15);
+  cy.queryByText("February").should("exist");
+});

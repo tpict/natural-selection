@@ -4,6 +4,7 @@ import {
   ControlProps as BaseControlProps,
   Option as BaseOption,
   OptionProps as BaseOptionProps,
+  preventDefault,
 } from "@natural-selection/core";
 
 export type OptionProps<T> = BaseOptionProps<T> & {
@@ -71,7 +72,7 @@ export const Control: React.FC<BaseControlProps> = props => (
 
 export const Menu = React.forwardRef<
   HTMLDivElement,
-  React.PropsWithChildren<{}>
+  JSX.IntrinsicElements["div"]
 >(function Menu({ children, ...rest }, ref) {
   return (
     <div
@@ -86,6 +87,7 @@ export const Menu = React.forwardRef<
         borderRadius: "0.4rem",
         backgroundColor: theme.colors.foreground,
       })}
+      onMouseDown={preventDefault}
     >
       {React.Children.count(children) ? (
         children
