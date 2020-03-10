@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react";
+import React, { Dispatch, useCallback, useRef } from "react";
 import AutosizeInput, { AutosizeInputProps } from "react-input-autosize";
 
 import { useStickyBlur } from "./hooks";
@@ -86,32 +86,32 @@ export const Control: React.FC<ControlProps> = ({
 
 export type OptionProps<T> = JSX.IntrinsicElements["div"] & {
   option: T;
-  handleFocus: (option: T | null) => void;
-  handleSelect: (option: T | null) => void;
+  dispatch: Dispatch<
+    { type: "selectOption"; option: T } | { type: "focusOption"; option: T }
+  >;
   innerRef?: React.Ref<HTMLDivElement>;
 };
 
 export const Option = simpleMemo(function Option<T>({
   option,
-  handleFocus,
-  handleSelect,
+  dispatch,
   innerRef,
   ...rest
 }: OptionProps<T>) {
   const onClick = useCallback(
     (event: React.SyntheticEvent) => {
       event.stopPropagation();
-      handleSelect(option);
+      dispatch({ type: "selectOption", option });
     },
-    [handleSelect, option],
+    [dispatch, option],
   );
 
   const onMouseOver = useCallback(
     (event: React.SyntheticEvent) => {
       event.stopPropagation();
-      handleFocus(option);
+      dispatch({ type: "focusOption", option });
     },
-    [handleFocus, option],
+    [dispatch, option],
   );
 
   return (

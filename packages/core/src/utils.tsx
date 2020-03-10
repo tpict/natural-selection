@@ -1,63 +1,23 @@
 import React from "react";
 
-import { noop } from "./react-select";
-
 export const simpleMemo: <T>(fn: T) => T = React.memo;
 
 export const preventDefault = (event: React.SyntheticEvent): void =>
   event.preventDefault();
 
-export const defaultKeyDownHandler = <T extends object>(
-  event: React.KeyboardEvent,
-  {
-    focused = null,
-    isMenuOpen = true,
-  }: { focused?: T | null; isMenuOpen?: boolean },
-  {
-    focusRelativeOption = noop,
-    handleValueChange = noop,
-    handleInputChange = noop,
-    setMenuOpen = noop,
-  }: {
-    focusRelativeOption?: (direction: number) => void;
-    handleValueChange?: (option: T | null) => void;
-    handleInputChange?: (input: string) => void;
-    setMenuOpen?: (isOpen: boolean) => void;
-  },
-): void => {
-  switch (event.key) {
-    case "ArrowDown":
-      focusRelativeOption(1);
-      break;
-    case "ArrowUp":
-      focusRelativeOption(-1);
-      break;
-    case " ":
-      if ((event.target as HTMLInputElement).value) {
-        return;
-      }
+export const mergeNonUndefinedProperties = <T extends object>(
+  target: T,
+  source: Partial<T>,
+): T => {
+  const result = { ...target };
 
-      if (!isMenuOpen) {
-        setMenuOpen(true);
-      } else if (focused) {
-        handleValueChange(focused);
-      }
+  const sourceEntries = Object.entries(source) as Array<[keyof T, T[keyof T]]>;
 
-      break;
-    case "Enter":
-      if (isMenuOpen && focused) {
-        handleValueChange(focused);
-        break;
-      }
+  sourceEntries.forEach(([key, value]) => {
+    if (value !== undefined) {
+      result[key] = value;
+    }
+  });
 
-      return;
-    case "Escape":
-      handleInputChange("");
-      setMenuOpen(false);
-      break;
-    default:
-      return;
-  }
-
-  event.preventDefault();
+  return result;
 };

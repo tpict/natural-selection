@@ -1,26 +1,32 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import flatMapDeep from "lodash-es/flatMapDeep";
+import React, { Dispatch, Reducer, useMemo } from "react";
 import {
+  useAugmentedReducer,
   useCallbackRef,
-  useManagedFocus,
-  useOpenMenuOnType,
-  useToggle,
+  createKeyDownHandler,
+  selectReducer,
+  SelectState,
+  SelectAction,
 } from "@natural-selection/core";
+import flatMapDeep from "lodash-es/flatMapDeep";
+import { createSelector, Selector } from "reselect";
 
 import {
   Menu as BaseMenu,
   Option,
-  OptionProps,
   Container,
   Control,
   Placeholder,
 } from "./components";
-import { singleValueKeyHandler } from "./utils";
 
 type SubmenuOptionType = { label: string; options: MenuOptionType[] };
 type SelectableMenuOptionType = { label: string; value: string };
 
 type MenuOptionType = SubmenuOptionType | SelectableMenuOptionType;
+
+type State = SelectState & {
+  value: SelectableMenuOptionType | null;
+  options: MenuOptionType[];
+};
 
 const isSubmenu = (option: MenuOptionType): option is SubmenuOptionType =>
   !!(option as SubmenuOptionType).options;
@@ -50,17 +56,64 @@ const flattenOptions = (options: MenuOptionType[]): MenuOptionType[] => {
   });
 };
 
+const flatOptionsSelector: Selector<
+  { options: MenuOptionType[] },
+  MenuOptionType[]
+> = createSelector(state => state.options, flattenOptions);
+
+const reducer: Reducer<State, SelectAction<MenuOptionType>> = (
+  state,
+  action,
+) => {
+  state = selectReducer(state, action, {
+    closeMenuOnSelect: false,
+    clearInputOnSelect: false,
+    visibleOptionsSelector: flatOptionsSelector,
+  });
+
+  switch (action.type) {
+    case "textInput":
+      if (!action.value) {
+        return { ...state, inputValue: action.value };
+      }
+
+      const focusedIndex = flatOptionsSelector(state).findIndex(option =>
+        option.label.toLowerCase().includes(action.value.toLowerCase()),
+      );
+
+      if (focusedIndex < 0) {
+        return state;
+      }
+
+      return { ...state, focusedIndex };
+    case "selectOption":
+    case "selectFocused":
+      let option: MenuOptionType;
+      if (action.type === "selectOption") {
+        option = action.option;
+      } else {
+        option = flatOptionsSelector(state)[state.focusedIndex];
+      }
+
+      if (isSubmenu(option)) {
+        return state;
+      }
+
+      return { ...state, value: option, isMenuOpen: false, inputValue: "" };
+    default:
+      return state;
+  }
+};
+
 const MenuInner = React.forwardRef<
   HTMLDivElement,
   {
     focusedOption: MenuOptionType | null;
     options: MenuOptionType[];
     isNested?: boolean;
-  } & Pick<OptionProps<MenuOptionType>, "handleSelect" | "handleFocus">
->(function MenuInner(
-  { options, focusedOption, handleSelect, handleFocus, isNested },
-  ref,
-) {
+    dispatch: Dispatch<SelectAction<MenuOptionType>>;
+  }
+>(function MenuInner({ options, focusedOption, dispatch, isNested }, ref) {
   return (
     <BaseMenu
       css={{
@@ -80,8 +133,7 @@ const MenuInner = React.forwardRef<
             <MenuInner
               options={option.options}
               focusedOption={focusedOption}
-              handleSelect={handleSelect}
-              handleFocus={handleFocus}
+              dispatch={dispatch}
               isNested
             />
           );
@@ -97,8 +149,7 @@ const MenuInner = React.forwardRef<
             key={option.label}
             option={option}
             isFocused={isFocused}
-            handleFocus={handleFocus}
-            handleSelect={handleSelect}
+            dispatch={dispatch}
             css={{
               position: "relative",
               ...(isFirst && {
@@ -120,87 +171,48 @@ const MenuInner = React.forwardRef<
   );
 });
 
-type MultiSelectProps = {
-  options: MenuOptionType[];
-};
-
-export const Menu: React.FC<MultiSelectProps> = ({ options }) => {
-  const [isMenuOpen, setMenuOpen, toggleMenuOpen] = useToggle(false);
-  const [value, setValue_] = useState<SelectableMenuOptionType | null>(null);
-  const [inputValue, setInputValue] = useState("");
-  useOpenMenuOnType(inputValue, setMenuOpen);
-
-  const setValue: typeof setValue_ = useCallback(
-    (...args) => {
-      setValue_(...args);
-      setInputValue("");
-      setMenuOpen(false);
+export const Menu: React.FC<{ options: MenuOptionType[] }> = ({ options }) => {
+  const [state, dispatch] = useAugmentedReducer(
+    reducer,
+    {
+      value: null,
+      options: [],
+      focusedIndex: 0,
+      inputValue: "",
+      isMenuOpen: false,
     },
-    [setMenuOpen],
-  );
-
-  const handleSelect = useCallback(
-    (option: MenuOptionType | null): void => {
-      if (!option || !isSubmenu(option)) {
-        setValue(option);
-      }
-    },
-    [setValue],
+    useMemo(
+      () => ({
+        options,
+      }),
+      [options],
+    ),
   );
 
   const menuRef = useCallbackRef<HTMLDivElement>();
-
-  const flatOptions = useMemo(() => flattenOptions(options), [options]);
-
-  const [focused, setFocused, focusRelativeOption] = useManagedFocus(
-    flatOptions,
-  );
-
-  useEffect(() => {
-    const option = flatOptions.find(option =>
-      option.label.toLowerCase().includes(inputValue.toLowerCase()),
-    );
-    if (option) {
-      setFocused(option);
-    }
-  }, [inputValue, flatOptions, setFocused]);
+  const handleKeyDown = createKeyDownHandler(dispatch, state);
 
   return (
-    <Container
-      onKeyDown={event =>
-        singleValueKeyHandler(
-          event,
-          {
-            focused,
-            isMenuOpen,
-          },
-          {
-            focusRelativeOption,
-            handleValueChange: handleSelect,
-            handleInputChange: setInputValue,
-            setMenuOpen,
-          },
-        )
-      }
-    >
+    <Container onKeyDown={handleKeyDown}>
       <Control
-        value={inputValue}
+        value={state.inputValue}
         menuRef={menuRef.current}
-        onMouseDown={toggleMenuOpen}
-        onInputChange={setInputValue}
-        onBlur={useCallback(() => setMenuOpen(false), [setMenuOpen])}
+        onMouseDown={() => dispatch({ type: "toggleMenu" })}
+        onInputChange={value => dispatch({ type: "textInput", value })}
+        onBlur={() => dispatch({ type: "closeMenu" })}
       >
-        {!inputValue && value?.value}
-        {!inputValue && !value && <Placeholder>Pick an option</Placeholder>}
+        {!state.inputValue && state.value?.value}
+        {!state.inputValue && !state.value && (
+          <Placeholder>Pick an option</Placeholder>
+        )}
       </Control>
 
-      {isMenuOpen && (
+      {state.isMenuOpen && (
         <MenuInner
           ref={menuRef}
-          options={options}
-          focusedOption={focused}
-          handleFocus={setFocused}
-          handleSelect={handleSelect}
+          options={state.options}
+          focusedOption={flatOptionsSelector(state)[state.focusedIndex]}
+          dispatch={dispatch}
         />
       )}
     </Container>

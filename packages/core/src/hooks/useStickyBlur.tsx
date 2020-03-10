@@ -5,18 +5,12 @@ export const useStickyBlur = (
   callback?: (event: React.FocusEvent<HTMLInputElement>) => void,
 ) => (event: React.FocusEvent<HTMLInputElement>): void => {
   const { currentTarget, relatedTarget } = event;
-  if (relatedTarget && stickyElement) {
-    if (stickyElement.contains) {
-      if (stickyElement.contains(relatedTarget as HTMLElement)) {
-        (currentTarget as HTMLElement).focus();
-        return;
-      }
-    }
-
-    console.warn(
-      'stickyElement doesn\'t have the "contains" property, please find out why!',
-      stickyElement,
-    );
+  if (
+    relatedTarget &&
+    stickyElement?.contains?.(relatedTarget as HTMLElement)
+  ) {
+    (currentTarget as HTMLElement).focus();
+    return;
   }
 
   callback?.(event);

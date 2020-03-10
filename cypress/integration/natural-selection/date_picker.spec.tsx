@@ -1,14 +1,5 @@
-const mockdate = require("mockdate");
-
-before(() => {
-  mockdate.set("2020-02-26");
-});
-
-after(() => {
-  mockdate.reset();
-});
-
 beforeEach(() => {
+  cy.clock(new Date("2020-02-26").getTime());
   cy.visit("/date-picker");
 });
 

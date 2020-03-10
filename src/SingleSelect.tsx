@@ -1,93 +1,119 @@
-import React, { useState, useCallback } from "react";
+import React, { Reducer, useMemo, useCallback, useRef } from "react";
 
 import {
   useCallbackRef,
   useFocusedRef,
-  useLabelFilter,
-  useManagedFocus,
-  useOpenMenuOnType,
   useScrollCaptor,
   useScrollToFocused,
-  useToggle,
+  useAugmentedReducer,
+  createKeyDownHandler,
+  selectReducer,
+  SelectState,
+  SelectAction,
 } from "@natural-selection/core";
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
 import { useMenuPlacementStyles } from "./hooks";
-import { singleValueKeyHandler } from "./utils";
+import { filteredOptionsSelector, focusedOptionSelector } from "./selectors";
 
 type SingleSelectProps<T> = {
   "aria-label"?: string;
   options: T[];
+  value?: T | null;
+  onStateChange?: (state: State<T>, action: SelectAction<T>) => void;
 };
 
-export const SingleSelect = <T extends { value: string; label: string }>({
+type State<T> = SelectState & {
+  options: T[];
+  value: T | null;
+};
+
+export const SingleSelect = <
+  T extends { value: string; label: string; isDisabled?: boolean }
+>({
   options,
+  value,
+  onStateChange,
   ...rest
 }: SingleSelectProps<T>): React.ReactElement => {
-  const [isMenuOpen, setMenuOpen, toggleMenuOpen] = useToggle(false);
-  const [inputValue, setInputValue] = useState("");
-  useOpenMenuOnType(inputValue, setMenuOpen);
+  const { current: reducer } = useRef<Reducer<State<T>, SelectAction<T>>>(
+    (state, action) => {
+      switch (action.type) {
+        case "selectOption":
+          state = {
+            ...state,
+            value: action.option,
+          };
+          break;
+        case "selectFocused":
+          state = {
+            ...state,
+            value: filteredOptionsSelector(state)[state.focusedIndex],
+          };
+          break;
+        case "clearLast":
+          state = { ...state, value: null };
+          break;
+      }
 
-  const [value, setValue_] = useState<T | null>(null);
-  const setValue: typeof setValue_ = useCallback(
-    (...args) => {
-      setValue_(...args);
-      setInputValue("");
-      setMenuOpen(false);
+      return selectReducer(state, action, {
+        visibleOptionsSelector: filteredOptionsSelector,
+      });
     },
-    [setMenuOpen],
   );
 
-  const menuRef = useCallbackRef();
+  const [state, dispatch] = useAugmentedReducer(
+    reducer,
+    {
+      isMenuOpen: false,
+      inputValue: "",
+      focusedIndex: 0,
+      value: null,
+      options: [],
+    },
+    useMemo(() => ({ ...(value && { value }), ...(options && { options }) }), [
+      value,
+      options,
+    ]),
+    onStateChange,
+  );
 
+  const menuRef = useCallbackRef<HTMLDivElement>();
   useScrollCaptor(menuRef.current);
-
   const placementStyles = useMenuPlacementStyles(menuRef.current);
-  const filteredOptions = useLabelFilter(options, inputValue);
-  const [focused, setFocused, focusRelativeOption] = useManagedFocus(
-    filteredOptions,
+  const [focusedRef, handleFocusedRef] = useFocusedRef(
+    focusedOptionSelector(state),
   );
-  const [focusedRef, handleOptionRef] = useFocusedRef(focused);
   useScrollToFocused(menuRef.current, focusedRef);
 
+  const handleKeyDown = createKeyDownHandler(dispatch, state);
+
   return (
-    <Container
-      onKeyDown={event =>
-        singleValueKeyHandler(
-          event,
-          { focused, isMenuOpen },
-          {
-            focusRelativeOption,
-            handleValueChange: setValue,
-            handleInputChange: setInputValue,
-            setMenuOpen,
-          },
-        )
-      }
-    >
+    <Container onKeyDown={handleKeyDown}>
       <Control
-        value={inputValue}
+        value={state.inputValue}
         aria-label={rest["aria-label"]}
-        onMouseDown={toggleMenuOpen}
-        onInputChange={setInputValue}
+        onMouseDown={() => dispatch({ type: "toggleMenu" })}
+        onInputChange={value => dispatch({ type: "textInput", value })}
         menuRef={menuRef.current}
-        onBlur={useCallback(() => setMenuOpen(false), [setMenuOpen])}
+        onBlur={useCallback(() => dispatch({ type: "closeMenu" }), [dispatch])}
       >
-        {!inputValue && value?.label}
-        {!inputValue && !value && <Placeholder>Pick an option</Placeholder>}
+        {!state.inputValue && state.value?.label}
+        {!state.inputValue && !state.value && (
+          <Placeholder>Pick an option</Placeholder>
+        )}
       </Control>
 
-      {isMenuOpen && (
+      {state.isMenuOpen && (
         <Menu ref={menuRef.callback} css={placementStyles}>
-          {filteredOptions.map(option => (
+          {filteredOptionsSelector(state).map(option => (
             <Option
               key={option.value}
               option={option}
-              isActive={value?.value === option?.value}
-              isFocused={focused?.value === option?.value}
-              handleFocus={setFocused}
-              handleSelect={setValue}
-              {...handleOptionRef(option)}
+              isActive={state.value?.value === option.value}
+              isFocused={option === focusedOptionSelector(state)}
+              dispatch={dispatch}
+              {...handleFocusedRef(option)}
             >
               {option.label}
             </Option>

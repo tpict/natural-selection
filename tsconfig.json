@@ -18,10 +18,11 @@
     "target": "ESNext",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": ["es2015", "dom"],
+    "lib": ["es2019", "dom"],
     "rootDir": "./",
     "esModuleInterop": true,
     "baseUrl": "src",
+    "noErrorTruncation": true,
 
     "paths": {
       "@natural-selection/core": ["../packages/core/src/index.tsx"]

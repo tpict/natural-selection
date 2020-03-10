@@ -1,118 +1,134 @@
-import React, { useCallback, useState } from "react";
+import React, { Reducer, useCallback, useMemo, useRef } from "react";
 
 import {
+  useAugmentedReducer,
   useCallbackRef,
   useFocusedRef,
-  useLabelFilter,
-  useManagedFocus,
-  useOpenMenuOnType,
   useScrollCaptor,
   useScrollToFocused,
-  useToggle,
-  defaultKeyDownHandler,
+  createKeyDownHandler,
+  selectReducer,
+  SelectState,
+  SelectAction,
 } from "@natural-selection/core";
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
 import { useMenuPlacementStyles } from "./hooks";
+import { filteredOptionsSelector, focusedOptionSelector } from "./selectors";
 
 type MultiSelectProps<T> = {
   options: T[];
   "aria-label"?: string;
+  value?: T[];
+  onStateChange?: (state: State<T>, action: SelectAction<T>) => void;
+};
+
+type State<T> = SelectState & {
+  options: T[];
+  value: T[];
 };
 
 export const MultiSelect = <T extends { label: string; value: string }>({
   options,
+  value,
+  onStateChange,
   ...rest
 }: MultiSelectProps<T>): React.ReactElement => {
-  const menuRef = useCallbackRef();
-  const [isMenuOpen, setMenuOpen, toggleMenuOpen] = useToggle(false);
-  const [value, setValue] = useState<T[]>([]);
-  const [inputValue, setInputValue] = useState("");
+  const { current: reducer } = useRef<Reducer<State<T>, SelectAction<T>>>(
+    (state, action) => {
+      switch (action.type) {
+        case "selectOption":
+        case "selectFocused": {
+          let selectedOption: T;
+          if (action.type === "selectOption") {
+            selectedOption = action.option;
+          } else {
+            const filteredOptions = filteredOptionsSelector(state);
+            selectedOption = filteredOptions[state.focusedIndex];
+          }
 
-  useOpenMenuOnType(inputValue, setMenuOpen);
+          state = {
+            ...state,
+            value: state.value.includes(selectedOption)
+              ? state.value.filter(option => option !== selectedOption)
+              : state.value.concat([selectedOption]),
+          };
+          break;
+        }
+        case "clearLast":
+          state = {
+            ...state,
+            value: state.value.slice(0, state.value.length - 1),
+          };
+          break;
+      }
+
+      return selectReducer(state, action, {
+        closeMenuOnSelect: false,
+        visibleOptionsSelector: filteredOptionsSelector,
+      });
+    },
+  );
+
+  const [state, dispatch] = useAugmentedReducer(
+    reducer,
+    {
+      isMenuOpen: false,
+      inputValue: "",
+      focusedIndex: 0,
+      value: [],
+      options: [],
+    },
+    useMemo(() => ({ options, value }), [options, value]),
+    onStateChange,
+  );
+
+  const menuRef = useCallbackRef<HTMLDivElement>();
 
   const placementStyles = useMenuPlacementStyles(menuRef.current);
 
-  const toggleValue = (selectedOption: T | null): void => {
-    if (!selectedOption) {
-      return;
-    }
+  const handleKeyDown = createKeyDownHandler(dispatch, state);
 
-    setValue(value => {
-      if (value.includes(selectedOption)) {
-        return value.filter(option => selectedOption !== option);
-      }
-
-      return value.concat([selectedOption]);
-    });
-  };
-
-  const filteredOptions = useLabelFilter(options, inputValue);
-
-  const [focused, setFocused, focusRelativeOption] = useManagedFocus(
-    filteredOptions,
+  const [focusedRef, handleFocusedRef] = useFocusedRef(
+    focusedOptionSelector(state),
   );
-  const [focusedRef, handleOptionRef] = useFocusedRef(focused);
   useScrollCaptor(menuRef.current);
   useScrollToFocused(menuRef.current, focusedRef);
-
-  const handleKeyDown = (event: React.KeyboardEvent): void => {
-    if (event.key === "Backspace") {
-      if (inputValue) {
-        return;
-      }
-
-      setValue(value => value.slice(0, value.length - 1));
-      event.preventDefault();
-    } else {
-      defaultKeyDownHandler(
-        event,
-        { focused, isMenuOpen },
-        {
-          focusRelativeOption,
-          handleValueChange: toggleValue,
-          handleInputChange: setInputValue,
-          setMenuOpen,
-        },
-      );
-    }
-  };
 
   return (
     <Container onKeyDown={handleKeyDown}>
       <Control
-        value={inputValue}
+        value={state.inputValue}
         aria-label={rest["aria-label"]}
         menuRef={menuRef.current}
-        onBlur={useCallback(() => setMenuOpen(false), [setMenuOpen])}
-        onInputChange={setInputValue}
-        onMouseDown={toggleMenuOpen}
+        onBlur={useCallback(() => dispatch({ type: "closeMenu" }), [dispatch])}
+        onInputChange={value => dispatch({ type: "textInput", value })}
+        onMouseDown={() => dispatch({ type: "toggleMenu" })}
       >
-        {value.map(({ label }) => label).join(", ")}
-        {!!value.length && isMenuOpen && ", "}
-        {!value.length && !inputValue && (
+        {state.value.map(({ label }) => label).join(", ")}
+        {!!state.value.length && state.isMenuOpen && ", "}
+        {!state.value.length && !state.inputValue && (
           <Placeholder>Select multiple options</Placeholder>
         )}
       </Control>
 
-      {isMenuOpen && (
+      {state.isMenuOpen && (
         <Menu ref={menuRef.callback} css={placementStyles}>
-          {filteredOptions.map(option => {
-            const isActive = value.includes(option);
+          {filteredOptionsSelector(state).map(option => {
+            const isActive = state.value.includes(option);
 
             return (
               <Option
                 option={option}
                 key={option.value}
                 isActive={isActive}
-                isFocused={focused?.value === option?.value}
-                handleFocus={setFocused}
-                handleSelect={toggleValue}
+                isFocused={option === focusedOptionSelector(state)}
+                dispatch={dispatch}
                 css={{
                   display: "flex",
                   justifyContent: "space-between",
                 }}
-                {...handleOptionRef(option)}
+                {...handleFocusedRef(option)}
               >
                 {option.label}
 
