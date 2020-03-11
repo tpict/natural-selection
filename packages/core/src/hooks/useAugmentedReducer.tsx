@@ -1,4 +1,11 @@
-import { Reducer, Dispatch, useMemo, useReducer, useCallback } from "react";
+import {
+  Reducer,
+  Dispatch,
+  useEffect,
+  useRef,
+  useMemo,
+  useReducer,
+} from "react";
 
 import { mergeNonUndefinedProperties } from "../utils";
 
@@ -13,8 +20,22 @@ export const useAugmentedReducer = <
   customReducer?: (state: State, action: Action) => State,
   onStateChange?: (state: State, action: Action) => void,
 ): [State, Dispatch<Action>] => {
-  const reduce: Reducer<State, Action> = useCallback(
+  const propsRef = useRef(props);
+  const customReducerRef = useRef(customReducer);
+  const onStateChangeRef = useRef(onStateChange);
+
+  useEffect(() => {
+    propsRef.current = props;
+    customReducerRef.current = customReducer;
+    onStateChangeRef.current = onStateChange;
+  }, [props, customReducer, onStateChange]);
+
+  const { current: reduce } = useRef<Reducer<State, Action>>(
     (prevState, action) => {
+      const { current: props } = propsRef;
+      const { current: customReducer } = customReducerRef;
+      const { current: onStateChange } = onStateChangeRef;
+
       const stateWithProps = mergeNonUndefinedProperties(
         prevState,
         props ?? {},
@@ -32,7 +53,6 @@ export const useAugmentedReducer = <
       // have a match - it'll save a render in the controlled props scenario
       return mergeNonUndefinedProperties(nextState, props ?? {});
     },
-    [customReducer, onStateChange, reducer, props],
   );
 
   const [innerState, dispatch] = useReducer(reduce, initialState);
