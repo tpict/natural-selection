@@ -20,7 +20,7 @@ type MultiSelectProps<T> = {
   options: T[];
   "aria-label"?: string;
   value?: T[];
-  onStateChange?: (state: State<T>, action: SelectAction<T>) => void;
+  customReducer?: (state: State<T>, action: SelectAction<T>) => State<T>;
 };
 
 type State<T> = SelectState & {
@@ -31,7 +31,7 @@ type State<T> = SelectState & {
 export const MultiSelect = <T extends { label: string; value: string }>({
   options,
   value,
-  onStateChange,
+  customReducer,
   ...rest
 }: MultiSelectProps<T>): React.ReactElement => {
   const { current: reducer } = useRef<Reducer<State<T>, SelectAction<T>>>(
@@ -80,7 +80,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
       options: [],
     },
     useMemo(() => ({ options, value }), [options, value]),
-    onStateChange,
+    customReducer,
   );
 
   const menuRef = useCallbackRef<HTMLDivElement>();

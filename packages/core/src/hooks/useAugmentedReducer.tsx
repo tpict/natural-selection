@@ -10,20 +10,29 @@ export const useAugmentedReducer = <
   reducer: Reducer<State, Action>,
   initialState: State,
   props?: Props,
-  onChange?: (state: State, action: Action) => void,
+  customReducer?: (state: State, action: Action) => State,
+  onStateChange?: (state: State) => void,
 ): [State, Dispatch<Action>] => {
   const reduce: Reducer<State, Action> = useCallback(
     (prevState, action) => {
-      const state = mergeNonUndefinedProperties(prevState, props ?? {});
+      const stateWithProps = mergeNonUndefinedProperties(
+        prevState,
+        props ?? {},
+      );
 
-      const overrideState = onChange?.(state, action);
-      if (overrideState) {
-        return overrideState;
+      let nextState: State;
+      if (customReducer) {
+        nextState = customReducer(stateWithProps, action);
+      } else {
+        nextState = reducer(stateWithProps, action);
       }
 
-      return reducer(state, action);
+      onStateChange?.(nextState);
+      // TODO: Do a shallow comparison against old state and return that if we
+      // have a match - it'll save a render in the controlled props scenario
+      return mergeNonUndefinedProperties(nextState, props ?? {});
     },
-    [onChange, reducer, props],
+    [customReducer, onStateChange, reducer, props],
   );
 
   const [innerState, dispatch] = useReducer(reduce, initialState);

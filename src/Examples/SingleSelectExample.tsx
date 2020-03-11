@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { SingleSelect } from "SingleSelect";
 
@@ -25,8 +25,17 @@ const options = [
   { value: "20", label: "Option 20" },
 ];
 
-export const SingleSelectExample: React.FC = () => (
-  <>
-    <SingleSelect aria-label="Single select example" options={options} />
-  </>
-);
+export const SingleSelectExample: React.FC = () => {
+  const [value, setValue] = useState<typeof options[number] | null>(null);
+
+  return (
+    <>
+      <SingleSelect
+        aria-label="Single select example"
+        options={options}
+        value={value}
+        onStateChange={({ value }) => setValue(value)}
+      />
+    </>
+  );
+};

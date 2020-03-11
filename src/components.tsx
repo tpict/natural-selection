@@ -87,7 +87,7 @@ export const Menu = React.forwardRef<
         borderRadius: "0.4rem",
         backgroundColor: theme.colors.foreground,
       })}
-      onMouseDown={preventDefault}
+      onMouseDown={rest.onMouseDown ?? preventDefault}
     >
       {React.Children.count(children) ? (
         children

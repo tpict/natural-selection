@@ -20,7 +20,8 @@ type SingleSelectProps<T> = {
   "aria-label"?: string;
   options: T[];
   value?: T | null;
-  onStateChange?: (state: State<T>, action: SelectAction<T>) => void;
+  customReducer?: (state: State<T>, action: SelectAction<T>) => State<T>;
+  onStateChange?: (state: State<T>) => void;
 };
 
 type State<T> = SelectState & {
@@ -33,6 +34,7 @@ export const SingleSelect = <
 >({
   options,
   value,
+  customReducer,
   onStateChange,
   ...rest
 }: SingleSelectProps<T>): React.ReactElement => {
@@ -71,10 +73,8 @@ export const SingleSelect = <
       value: null,
       options: [],
     },
-    useMemo(() => ({ ...(value && { value }), ...(options && { options }) }), [
-      value,
-      options,
-    ]),
+    useMemo(() => ({ value, options }), [value, options]),
+    customReducer,
     onStateChange,
   );
 
