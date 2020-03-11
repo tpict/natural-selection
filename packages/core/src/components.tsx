@@ -31,13 +31,15 @@ export const Input: React.ForwardRefExoticComponent<AutosizeInputProps &
 
 export type InputProps = React.ComponentProps<typeof Input>;
 
-export type ControlProps = InputProps & {
+export type ControlProps = Omit<InputProps, "inputRef"> & {
   onInputChange: (value: string) => void;
   menuRef: HTMLElement | null;
+  inputRef?: React.MutableRefObject<HTMLInputElement | null>;
 };
 
 export const Control: React.FC<ControlProps> = ({
   children,
+  inputRef,
   menuRef,
   className,
   onBlur,
@@ -48,7 +50,7 @@ export const Control: React.FC<ControlProps> = ({
   onInputChange,
   ...rest
 }) => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const defaultInputRef = useRef<HTMLInputElement | null>(null);
   const handleBlur = useStickyBlur(menuRef, onBlur);
 
   return (
@@ -57,10 +59,10 @@ export const Control: React.FC<ControlProps> = ({
       onMouseDown={useCallback(
         event => {
           event.preventDefault();
-          inputRef.current?.focus();
+          (inputRef ?? defaultInputRef).current?.focus();
           onMouseDown?.(event);
         },
-        [onMouseDown],
+        [onMouseDown, inputRef],
       )}
       {...{
         className,
@@ -70,7 +72,7 @@ export const Control: React.FC<ControlProps> = ({
     >
       {children}
       <Input
-        ref={inputRef}
+        ref={inputRef ?? defaultInputRef}
         onChange={useCallback(
           event => {
             onChange?.(event);
