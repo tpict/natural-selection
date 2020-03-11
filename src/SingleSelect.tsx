@@ -21,7 +21,7 @@ type SingleSelectProps<T> = {
   options: T[];
   value?: T | null;
   customReducer?: (state: State<T>, action: SelectAction<T>) => State<T>;
-  onStateChange?: (state: State<T>) => void;
+  onStateChange?: (state: State<T>, action: SelectAction<T>) => void;
 };
 
 type State<T> = SelectState & {

@@ -11,7 +11,7 @@ export const useAugmentedReducer = <
   initialState: State,
   props?: Props,
   customReducer?: (state: State, action: Action) => State,
-  onStateChange?: (state: State) => void,
+  onStateChange?: (state: State, action: Action) => void,
 ): [State, Dispatch<Action>] => {
   const reduce: Reducer<State, Action> = useCallback(
     (prevState, action) => {
@@ -27,7 +27,7 @@ export const useAugmentedReducer = <
         nextState = reducer(stateWithProps, action);
       }
 
-      onStateChange?.(nextState);
+      onStateChange?.(nextState, action);
       // TODO: Do a shallow comparison against old state and return that if we
       // have a match - it'll save a render in the controlled props scenario
       return mergeNonUndefinedProperties(nextState, props ?? {});
