@@ -20,8 +20,16 @@ type SingleSelectProps<T> = {
   "aria-label"?: string;
   options: T[];
   value?: T | null;
-  customReducer?: (state: State<T>, action: SelectAction<T>) => State<T>;
-  onStateChange?: (state: State<T>, action: SelectAction<T>) => void;
+  customReducer?: (
+    state: State<T>,
+    action: SelectAction<T>,
+    reducer: Reducer<State<T>, SelectAction<T>>,
+  ) => State<T>;
+  onStateChange?: (
+    state: State<T>,
+    action: SelectAction<T>,
+    prevState: State<T>,
+  ) => void;
 };
 
 type State<T> = SelectState & {
@@ -40,6 +48,7 @@ export const SingleSelect = <
 }: SingleSelectProps<T>): React.ReactElement => {
   const { current: reducer } = useRef<Reducer<State<T>, SelectAction<T>>>(
     (state, action) => {
+      console.log("ACTION!");
       switch (action.type) {
         case "selectOption":
           state = {

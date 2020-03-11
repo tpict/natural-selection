@@ -20,7 +20,11 @@ type MultiSelectProps<T> = {
   options: T[];
   "aria-label"?: string;
   value?: T[];
-  customReducer?: (state: State<T>, action: SelectAction<T>) => State<T>;
+  customReducer?: (
+    state: State<T>,
+    action: SelectAction<T>,
+    reducer: Reducer<State<T>, SelectAction<T>>,
+  ) => State<T>;
 };
 
 type State<T> = SelectState & {
