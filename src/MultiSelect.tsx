@@ -91,13 +91,12 @@ export const MultiSelect = <T extends { label: string; value: string }>({
 
   const placementStyles = useMenuPlacementStyles(menuRef.current);
 
-  const handleKeyDown = createKeyDownHandler(dispatch, state);
-
   const [focusedRef, handleFocusedRef] = useFocusedRef(
     focusedOptionSelector(state),
   );
   useScrollCaptor(menuRef.current);
-  useScrollToFocused(menuRef.current, focusedRef);
+  const scrollOnUpdate = useScrollToFocused(focusedRef);
+  const handleKeyDown = createKeyDownHandler(dispatch, state, scrollOnUpdate);
 
   return (
     <Container onKeyDown={handleKeyDown}>

@@ -1,4 +1,4 @@
-import { animatedScrollTo, getScrollParent, getScrollTop } from "./utils";
+import { getScrollParent, getScrollTop } from "./utils";
 
 export type MenuState = {
   placement: "bottom" | "top" | null;
@@ -53,7 +53,6 @@ export function getMenuPlacement({
 
   const scrollDown = menuBottom - viewHeight + scrollTop + marginBottom;
   const scrollUp = scrollTop + menuTop - marginTop;
-  const scrollDuration = 160;
 
   switch (placement) {
     case "auto":
@@ -66,7 +65,10 @@ export function getMenuPlacement({
       // 2: the menu will fit, if scrolled
       if (scrollSpaceBelow >= menuHeight && !isFixedPosition) {
         if (shouldScroll) {
-          animatedScrollTo(scrollParent, scrollDown, scrollDuration);
+          scrollParent.scrollTo({
+            top: scrollDown,
+            behavior: "smooth",
+          });
         }
 
         return { placement: "bottom", maxHeight };
@@ -78,7 +80,10 @@ export function getMenuPlacement({
         (isFixedPosition && viewSpaceBelow >= minHeight)
       ) {
         if (shouldScroll) {
-          animatedScrollTo(scrollParent, scrollDown, scrollDuration);
+          scrollParent.scrollTo({
+            top: scrollDown,
+            behavior: "smooth",
+          });
         }
 
         // we want to provide as much of the menu as possible to the user,
@@ -127,7 +132,10 @@ export function getMenuPlacement({
       // 2: the menu will fit, if scrolled
       if (scrollSpaceAbove >= menuHeight && !isFixedPosition) {
         if (shouldScroll) {
-          animatedScrollTo(scrollParent, scrollUp, scrollDuration);
+          scrollParent.scrollTo({
+            top: scrollUp,
+            behavior: "smooth",
+          });
         }
 
         return { placement: "top", maxHeight };
@@ -152,7 +160,10 @@ export function getMenuPlacement({
         }
 
         if (shouldScroll) {
-          animatedScrollTo(scrollParent, scrollUp, scrollDuration);
+          scrollParent.scrollTo({
+            top: scrollUp,
+            behavior: "smooth",
+          });
         }
 
         return {

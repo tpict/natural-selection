@@ -93,9 +93,8 @@ export const SingleSelect = <
   const [focusedRef, handleFocusedRef] = useFocusedRef(
     focusedOptionSelector(state),
   );
-  useScrollToFocused(menuRef.current, focusedRef);
-
-  const handleKeyDown = createKeyDownHandler(dispatch, state);
+  const scrollOnUpdate = useScrollToFocused(focusedRef);
+  const handleKeyDown = createKeyDownHandler(dispatch, state, scrollOnUpdate);
 
   return (
     <Container onKeyDown={handleKeyDown}>
