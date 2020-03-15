@@ -25,7 +25,7 @@ export const useMenuPlacement = (
   }: MenuPlacementOptions,
 ): MenuState => {
   const prevRef = usePrevious(menuRef);
-  const menuJustOpened = menuRef && !prevRef;
+  const menuJustOpened = menuRef && !prevRef.current;
 
   const [menuPlacement, setMenuPlacement] = useState<MenuState>({
     maxHeight,

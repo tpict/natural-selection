@@ -7,6 +7,7 @@ import {
   useReducer,
 } from "react";
 
+import { usePrevious } from "./usePrevious";
 import { mergeNonUndefinedProperties } from "../utils";
 
 export const useAugmentedReducer = <
@@ -25,6 +26,7 @@ export const useAugmentedReducer = <
   onStateChange?: (state: State, action: Action, prevState: State) => void,
 ): [State, Dispatch<Action>] => {
   const propsRef = useRef(props);
+  const previousPropsRef = usePrevious(props);
   const customReducerRef = useRef(customReducer);
   const onStateChangeRef = useRef(onStateChange);
 
@@ -37,13 +39,19 @@ export const useAugmentedReducer = <
   const { current: reduce } = useRef<Reducer<State, Action>>(
     (prevState, action) => {
       const { current: props } = propsRef;
+      const { current: previousProps } = previousPropsRef;
       const { current: customReducer } = customReducerRef;
       const { current: onStateChange } = onStateChangeRef;
 
-      const prevStateWithProps = mergeNonUndefinedProperties(
-        prevState,
-        props ?? {},
-      );
+      // Only merge props on top if they've changed since the last dispatch,
+      // otherwise no-op actions will trigger a render.
+      let prevStateWithProps = prevState;
+      if (props !== previousProps) {
+        prevStateWithProps = mergeNonUndefinedProperties(
+          prevState,
+          props ?? {},
+        );
+      }
 
       let nextState: State;
       if (customReducer) {
@@ -52,19 +60,28 @@ export const useAugmentedReducer = <
         nextState = reducer(prevStateWithProps, action);
       }
 
-      onStateChange?.(nextState, action, prevStateWithProps);
-      // TODO: Do a shallow comparison against old state and return that if we
-      // have a match - it'll save a render in the controlled props scenario
-      return mergeNonUndefinedProperties(nextState, props ?? {});
+      if (nextState !== prevStateWithProps) {
+        // Only call this on state changes.
+        onStateChange?.(nextState, action, prevStateWithProps);
+
+        // We need to merge props on top after the reducer is done in case it
+        // overrode any of them, but we should only do this if the state
+        // actually changed, otherwise no-op actions will trigger a render.
+        return mergeNonUndefinedProperties(nextState, props ?? {});
+      }
+
+      return nextState;
     },
   );
 
-  const [innerState, dispatch] = useReducer(reduce, initialState);
+  const [innerState, dispatch] = useReducer(reduce, {
+    ...initialState,
+    ...props,
+  });
 
-  const state = useMemo(
-    () => mergeNonUndefinedProperties(innerState, props ?? {}),
-    [innerState, props],
-  );
+  const state = useMemo(() => {
+    return mergeNonUndefinedProperties(innerState, props ?? {});
+  }, [innerState, props]);
 
   return [state, dispatch];
 };
