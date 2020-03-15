@@ -1,33 +1,33 @@
 import { Dispatch } from "react";
 
+import { RelativeFocusAction } from "./reducers";
+
 export const createKeyDownHandler = (
   dispatch: Dispatch<
     | { type: "openMenu" }
     | { type: "closeMenu" }
     | { type: "selectFocused" }
-    | { type: "relativeFocus"; direction: number }
+    | RelativeFocusAction
     | { type: "clearLast" }
   >,
   state: {
     inputValue: string;
     isMenuOpen: boolean;
   },
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  scrollOnUpdate: () => void = () => {},
 ) => (event: React.KeyboardEvent): void => {
   switch (event.key) {
     case "ArrowDown":
-      scrollOnUpdate();
       dispatch({
         type: "relativeFocus",
         direction: 1,
+        source: "keyboard",
       });
       break;
     case "ArrowUp":
-      scrollOnUpdate();
       dispatch({
         type: "relativeFocus",
         direction: -1,
+        source: "keyboard",
       });
       break;
     case " ":

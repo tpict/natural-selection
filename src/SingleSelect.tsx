@@ -4,7 +4,7 @@ import {
   useCallbackRef,
   useFocusedRef,
   useScrollCaptor,
-  useScrollToFocused,
+  useScrollDecorator,
   useAugmentedReducer,
   createKeyDownHandler,
   selectReducer,
@@ -48,7 +48,6 @@ export const SingleSelect = <
 }: SingleSelectProps<T>): React.ReactElement => {
   const { current: reducer } = useRef<Reducer<State<T>, SelectAction<T>>>(
     (state, action) => {
-      console.log("ACTION!");
       switch (action.type) {
         case "selectOption":
           state = {
@@ -73,7 +72,7 @@ export const SingleSelect = <
     },
   );
 
-  const [state, dispatch] = useAugmentedReducer(
+  const [state, plainDispatch] = useAugmentedReducer(
     reducer,
     {
       isMenuOpen: false,
@@ -87,14 +86,15 @@ export const SingleSelect = <
     onStateChange,
   );
 
-  const menuRef = useCallbackRef<HTMLDivElement>();
-  useScrollCaptor(menuRef.current);
-  const placementStyles = useMenuPlacementStyles(menuRef.current);
   const [focusedRef, handleFocusedRef] = useFocusedRef(
     focusedOptionSelector(state),
   );
-  const scrollOnUpdate = useScrollToFocused(focusedRef);
-  const handleKeyDown = createKeyDownHandler(dispatch, state, scrollOnUpdate);
+  const dispatch = useScrollDecorator(plainDispatch, focusedRef);
+
+  const menuRef = useCallbackRef<HTMLDivElement>();
+  useScrollCaptor(menuRef.current);
+  const placementStyles = useMenuPlacementStyles(menuRef.current);
+  const handleKeyDown = createKeyDownHandler(dispatch, state);
 
   return (
     <Container onKeyDown={handleKeyDown}>

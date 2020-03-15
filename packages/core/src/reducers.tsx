@@ -4,15 +4,32 @@ export type SelectState = {
   isMenuOpen: boolean;
 };
 
+export type SelectOptionAction<OptionType> = {
+  type: "selectOption";
+  option: OptionType;
+};
+
+export type FocusOptionAction<OptionType> = {
+  type: "focusOption";
+  option: OptionType;
+  source?: "keyboard" | "mouse";
+};
+
+export type RelativeFocusAction = {
+  type: "relativeFocus";
+  direction: number;
+  source?: "keyboard" | "mouse";
+};
+
 export type SelectAction<OptionType> =
   | { type: "textInput"; value: string }
   | { type: "openMenu" }
   | { type: "closeMenu" }
   | { type: "toggleMenu" }
-  | { type: "focusOption"; option: OptionType }
-  | { type: "relativeFocus"; direction: number }
+  | FocusOptionAction<OptionType>
+  | RelativeFocusAction
   | { type: "selectFocused" }
-  | { type: "selectOption"; option: OptionType }
+  | SelectOptionAction<OptionType>
   | { type: "clearLast" };
 
 type SelectReducerConfig<OptionType, State> = {
@@ -60,7 +77,7 @@ export const selectReducer = <
       };
     case "focusOption":
       const focusedIndex = visibleOptionsSelector(state).indexOf(action.option);
-      if (focusedIndex < 0) {
+      if (focusedIndex < 0 || focusedIndex === state.focusedIndex) {
         return state;
       }
 

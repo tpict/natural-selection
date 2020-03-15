@@ -17,7 +17,8 @@ export const useAugmentedReducer = <
 >(
   reducer: Reducer<State, Action>,
   initialState: State,
-  props?: Props,
+  // TODO: don't know why this union is required, {} should fulfill Props
+  props: Props | {} = {},
   customReducer?: (
     state: State,
     action: Action,
@@ -47,10 +48,7 @@ export const useAugmentedReducer = <
       // otherwise no-op actions will trigger a render.
       let prevStateWithProps = prevState;
       if (props !== previousProps) {
-        prevStateWithProps = mergeNonUndefinedProperties(
-          prevState,
-          props ?? {},
-        );
+        prevStateWithProps = mergeNonUndefinedProperties(prevState, props);
       }
 
       let nextState: State;
@@ -67,20 +65,22 @@ export const useAugmentedReducer = <
         // We need to merge props on top after the reducer is done in case it
         // overrode any of them, but we should only do this if the state
         // actually changed, otherwise no-op actions will trigger a render.
-        return mergeNonUndefinedProperties(nextState, props ?? {});
+        return mergeNonUndefinedProperties(nextState, props);
       }
 
       return nextState;
     },
   );
 
-  const [innerState, dispatch] = useReducer(reduce, {
-    ...initialState,
-    ...props,
-  });
+  const [innerState, dispatch] = useReducer(
+    reduce,
+    mergeNonUndefinedProperties(initialState, props),
+  );
 
+  // Redundant props merge so a render will be triggered after props change, even
+  // without a corresponding action
   const state = useMemo(() => {
-    return mergeNonUndefinedProperties(innerState, props ?? {});
+    return mergeNonUndefinedProperties(innerState, props);
   }, [innerState, props]);
 
   return [state, dispatch];

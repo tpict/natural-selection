@@ -5,7 +5,7 @@ import {
   useCallbackRef,
   useFocusedRef,
   useScrollCaptor,
-  useScrollToFocused,
+  useScrollDecorator,
   createKeyDownHandler,
   selectReducer,
   SelectState,
@@ -74,7 +74,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
     },
   );
 
-  const [state, dispatch] = useAugmentedReducer(
+  const [state, plainDispatch] = useAugmentedReducer(
     reducer,
     {
       isMenuOpen: false,
@@ -91,12 +91,14 @@ export const MultiSelect = <T extends { label: string; value: string }>({
 
   const placementStyles = useMenuPlacementStyles(menuRef.current);
 
+  useScrollCaptor(menuRef.current);
+
   const [focusedRef, handleFocusedRef] = useFocusedRef(
     focusedOptionSelector(state),
   );
-  useScrollCaptor(menuRef.current);
-  const scrollOnUpdate = useScrollToFocused(focusedRef);
-  const handleKeyDown = createKeyDownHandler(dispatch, state, scrollOnUpdate);
+  const dispatch = useScrollDecorator(plainDispatch, focusedRef);
+
+  const handleKeyDown = createKeyDownHandler(dispatch, state);
 
   return (
     <Container onKeyDown={handleKeyDown}>

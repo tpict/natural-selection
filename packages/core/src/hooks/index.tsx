@@ -4,5 +4,5 @@ export * from "./useFocusedRef";
 export * from "./useMenuPlacement";
 export * from "./usePrevious";
 export * from "./useScrollCaptor";
-export * from "./useScrollToFocused";
+export * from "./useScrollDecorator";
 export * from "./useStickyBlur";

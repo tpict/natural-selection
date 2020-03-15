@@ -2,6 +2,7 @@ import React, { Dispatch, useCallback, useRef } from "react";
 import AutosizeInput, { AutosizeInputProps } from "react-input-autosize";
 
 import { useStickyBlur } from "./hooks";
+import { SelectOptionAction, FocusOptionAction } from "./reducers";
 import { simpleMemo, preventDefault } from "./utils";
 
 // Using the generic type paramters on React.forwardRef results in weirdly
@@ -88,9 +89,7 @@ export const Control: React.FC<ControlProps> = ({
 
 export type OptionProps<T> = JSX.IntrinsicElements["div"] & {
   option: T;
-  dispatch: Dispatch<
-    { type: "selectOption"; option: T } | { type: "focusOption"; option: T }
-  >;
+  dispatch: Dispatch<SelectOptionAction<T> | FocusOptionAction<T>>;
   innerRef?: React.Ref<HTMLDivElement>;
 };
 
@@ -108,10 +107,10 @@ export const Option = simpleMemo(function Option<T>({
     [dispatch, option],
   );
 
-  const onMouseOver = useCallback(
+  const onHover = useCallback(
     (event: React.SyntheticEvent) => {
       event.stopPropagation();
-      dispatch({ type: "focusOption", option });
+      dispatch({ type: "focusOption", option, source: "mouse" });
     },
     [dispatch, option],
   );
@@ -123,7 +122,8 @@ export const Option = simpleMemo(function Option<T>({
       tabIndex={-1}
       onMouseDown={preventDefault}
       onClick={onClick}
-      onMouseOver={onMouseOver}
+      onMouseMove={onHover}
+      onMouseOver={onHover}
     />
   );
 });
