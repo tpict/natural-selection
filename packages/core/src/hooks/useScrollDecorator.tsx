@@ -2,13 +2,16 @@ import { Dispatch, useEffect, useRef } from "react";
 
 import { FocusOptionAction, RelativeFocusAction } from "../reducers";
 
+const isFocusAction = <OptionType extends unknown>(
+  action: FocusOptionAction<OptionType> | RelativeFocusAction | unknown,
+): action is FocusOptionAction<OptionType> | RelativeFocusAction => {
+  const asAction = action as { type: string };
+  return asAction.type === "focusOption" || asAction.type === "relativeFocus";
+};
+
 export const useScrollDecorator = <
   OptionType extends unknown,
-  AdditionalActions,
-  Action =
-    | FocusOptionAction<OptionType>
-    | RelativeFocusAction
-    | AdditionalActions
+  Action extends FocusOptionAction<OptionType> | RelativeFocusAction | unknown
 >(
   dispatch: Dispatch<Action>,
   focusedRef: HTMLElement | null,
@@ -37,7 +40,7 @@ export const useScrollDecorator = <
   }, [focusedRef]);
 
   const dispatchRef = useRef<Dispatch<Action>>(action => {
-    if (action.type === "focusOption" || action.type === "relativeFocus") {
+    if (isFocusAction(action)) {
       if (action.source === "keyboard") {
         blockMouseEventsRef.current = true;
         shouldScrollOnUpdateRef.current = true;
