@@ -11,6 +11,7 @@ import {
   selectReducer,
   SelectState,
   SelectAction,
+  AccessibilityPropsProvider,
 } from "@natural-selection/core";
 import { createSelector, Selector } from "reselect";
 
@@ -43,11 +44,17 @@ type YearOptionType = {
   label: number;
 };
 
-type SelectMonthOptionType = { type: "selectMonth" };
-const selectMonthOption: SelectMonthOptionType = { type: "selectMonth" };
+type SelectMonthOptionType = { type: "selectMonth"; label: string };
+const selectMonthOption: SelectMonthOptionType = {
+  type: "selectMonth",
+  label: "Select month",
+};
 
-type SelectYearOptionType = { type: "selectYear" };
-const selectYearOption: SelectYearOptionType = { type: "selectYear" };
+type SelectYearOptionType = { type: "selectYear"; label: string };
+const selectYearOption: SelectYearOptionType = {
+  type: "selectYear",
+  label: "Select year",
+};
 
 type NavOption = SelectMonthOptionType | SelectYearOptionType;
 
@@ -210,8 +217,12 @@ const optionsSelector = createSelector<
   },
 );
 
+const getFocusedOption = (state: State): DatePickerOption | null => {
+  return optionsSelector(state)[state.focusedIndex] || null;
+};
+
 const getIsOptionFocused = (option: DatePickerOption, state: State): boolean =>
-  optionsSelector(state).indexOf(option) === state.focusedIndex;
+  getFocusedOption(state) === option;
 
 const reducer: Reducer<State, SelectAction<DatePickerOption>> = (
   state,
@@ -326,7 +337,10 @@ const DayOption = simpleMemo(function DayOption(
   );
 });
 
-export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
+export const DatePicker: React.FC<{ id?: string; "aria-label"?: string }> = ({
+  id: providedId,
+  ...rest
+}) => {
   const [state, dispatch] = useAugmentedReducer(reducer, {
     isMenuOpen: false,
     inputValue: "",
@@ -406,6 +420,7 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
           key={option.type}
           option={option}
           dispatch={dispatch}
+          isFocused={getIsOptionFocused(option, state)}
           css={{
             color: theme.colors.background,
             borderWidth: 0,
@@ -501,35 +516,49 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
   })();
 
   return (
-    <Container onKeyDown={handleKeyDown}>
-      <Control
-        value={state.inputValue}
-        aria-label={props["aria-label"]}
-        menuRef={menuRef.current}
-        onInputChange={value => dispatch({ type: "textInput", value })}
-        onBlur={() => dispatch({ type: "closeMenu" })}
-        onMouseDown={() => dispatch({ type: "toggleMenu" })}
-      >
-        {!state.inputValue &&
-          state.value?.calendar(undefined, {
-            sameDay: "[Today] (MM/DD/YYYY)",
-            nextDay: "[Tomorrow] (MM/DD/YYYY)",
-            nextWeek: "[Next] dddd (MM/DD/YYYY)",
-            lastDay: "[Yesterday] (MM/DD/YYYY)",
-            lastWeek: "[Last] dddd (MM/DD/YYYY)",
-            sameElse: "MM/DD/YYYY",
-          })}
-        {!state.inputValue && !state.value && (
-          <Placeholder>Pick a date</Placeholder>
-        )}
-      </Control>
+    <AccessibilityPropsProvider
+      role="grid"
+      id={providedId}
+      focusedOption={getFocusedOption(state)}
+      options={optionsSelector(state)}
+      getOptionLabel={option => {
+        if (option.type === "day") {
+          return option.value.format("Mo MMMM YYYY");
+        }
 
-      {state.isMenuOpen && (
-        <Menu data-testid={"datepicker-menu"} ref={menuRef} css={position}>
-          {navOptionsNode}
-          {optionsNode}
-        </Menu>
-      )}
-    </Container>
+        return option.label;
+      }}
+    >
+      <Container onKeyDown={handleKeyDown}>
+        <Control
+          value={state.inputValue}
+          aria-label={rest["aria-label"]}
+          menuRef={menuRef.current}
+          onInputChange={value => dispatch({ type: "textInput", value })}
+          onBlur={() => dispatch({ type: "closeMenu" })}
+          onMouseDown={() => dispatch({ type: "toggleMenu" })}
+        >
+          {!state.inputValue &&
+            state.value?.calendar(undefined, {
+              sameDay: "[Today] (MM/DD/YYYY)",
+              nextDay: "[Tomorrow] (MM/DD/YYYY)",
+              nextWeek: "[Next] dddd (MM/DD/YYYY)",
+              lastDay: "[Yesterday] (MM/DD/YYYY)",
+              lastWeek: "[Last] dddd (MM/DD/YYYY)",
+              sameElse: "MM/DD/YYYY",
+            })}
+          {!state.inputValue && !state.value && (
+            <Placeholder>Pick a date</Placeholder>
+          )}
+        </Control>
+
+        {state.isMenuOpen && (
+          <Menu data-testid={"datepicker-menu"} ref={menuRef} css={position}>
+            {navOptionsNode}
+            {optionsNode}
+          </Menu>
+        )}
+      </Container>
+    </AccessibilityPropsProvider>
   );
 };

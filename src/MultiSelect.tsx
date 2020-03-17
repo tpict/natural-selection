@@ -108,6 +108,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
       id={providedId}
       focusedOption={focusedOptionSelector(state)}
       options={state.options}
+      role="listbox"
     >
       <Container onKeyDown={handleKeyDown}>
         <Control

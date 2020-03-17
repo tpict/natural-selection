@@ -1,9 +1,12 @@
 import { createContext } from "react";
 
+// TODO: surely this is provided by the JSX interface or something?
+export type AriaRoles = "combobox" | "listbox" | "grid" | "menu";
+
 export type AccessibilityContextType = {
   controlProps: {
     "aria-owns"?: string;
-    "aria-haspopup"?: "listbox";
+    "aria-haspopup"?: AriaRoles;
   };
   inputProps: {
     id?: string;
@@ -12,7 +15,7 @@ export type AccessibilityContextType = {
     "aria-controls"?: string;
   };
   menuProps: {
-    role?: "listbox";
+    role?: AriaRoles;
     id?: string;
   };
   getOptionProps: <OptionType>(

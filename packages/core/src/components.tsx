@@ -1,7 +1,7 @@
 import React, { Dispatch, useCallback, useRef } from "react";
 import AutosizeInput, { AutosizeInputProps } from "react-input-autosize";
 
-import { AccessibilityContext } from "./context";
+import { AriaRoles, AccessibilityContext } from "./context";
 import { useAccessibilityProps, useStickyBlur } from "./hooks";
 import { SelectOptionAction, FocusOptionAction } from "./reducers";
 import { simpleMemo, preventDefault } from "./utils";
@@ -157,25 +157,29 @@ export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(function Menu(
 let runningRef = 1;
 
 export type AccessibilityPropsProviderProps<OptionType> = {
+  role: AriaRoles;
   id?: string;
   prefix?: string;
   getOptionId?: (option: OptionType) => string;
+  getOptionLabel?: (option: OptionType) => string | number | undefined;
   focusedOption: OptionType | null;
   options: OptionType[];
 };
 
 export const AccessibilityPropsProvider = <OptionType extends unknown>({
+  role,
   id: customId,
   prefix = "natural-selection",
   focusedOption,
   options,
   children,
   getOptionId: getCustomOptionId,
+  getOptionLabel: getCustomOptionLabel,
 }: React.PropsWithChildren<
   AccessibilityPropsProviderProps<OptionType>
 >): React.ReactElement => {
   const id = useRef(customId || `${prefix}-${runningRef++}`).current;
-  const menuId = `${id}-listbox`;
+  const menuId = `${id}-${role}`;
 
   const getOptionId =
     getCustomOptionId ??
@@ -188,10 +192,13 @@ export const AccessibilityPropsProvider = <OptionType extends unknown>({
       return `${id}-option-${index}`;
     });
 
+  const getOptionLabel =
+    getCustomOptionLabel ?? (option => (option as { label: string }).label);
+
   return (
     <AccessibilityContext.Provider
       value={{
-        controlProps: { "aria-owns": menuId, "aria-haspopup": "listbox" },
+        controlProps: { "aria-owns": menuId, "aria-haspopup": role },
         inputProps: {
           id,
           role: "combobox",
@@ -200,14 +207,16 @@ export const AccessibilityPropsProvider = <OptionType extends unknown>({
             "aria-activedescendant": getOptionId(focusedOption),
           }),
         },
-        menuProps: { id: menuId, role: "listbox" },
+        menuProps: { id: menuId, role },
         getOptionProps: (option, { isFocused }) => {
           const index = options.indexOf(option as OptionType);
+          const label = getOptionLabel(option as OptionType);
 
           return {
             role: "option",
             "aria-selected": isFocused,
             ...(index > -1 && { id: getOptionId(option as OptionType) }),
+            ...(label && { "aria-label": label }),
           };
         },
       }}
