@@ -1,3 +1,4 @@
+export * from "./useAccessibilityProps";
 export * from "./useAugmentedReducer";
 export * from "./useCallbackRef";
 export * from "./useFocusedRef";

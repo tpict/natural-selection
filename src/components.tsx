@@ -1,10 +1,11 @@
 import React from "react";
 import {
+  Menu as BaseMenu,
+  MenuProps as BaseMenuProps,
   Control as BaseControl,
   ControlProps as BaseControlProps,
   Option as BaseOption,
   OptionProps as BaseOptionProps,
-  preventDefault,
 } from "@natural-selection/core";
 
 export type OptionProps<T> = BaseOptionProps<T> & {
@@ -24,6 +25,7 @@ export function Option<T>({
     <BaseOption
       {...rest}
       innerRef={innerRef}
+      isFocused={isFocused}
       css={theme => ({
         color: theme.colors.background,
         backgroundColor: theme.colors.foreground,
@@ -70,35 +72,33 @@ export const Control: React.FC<BaseControlProps> = props => (
   />
 );
 
-export const Menu = React.forwardRef<
-  HTMLDivElement,
-  JSX.IntrinsicElements["div"]
->(function Menu({ children, ...rest }, ref) {
-  return (
-    <div
-      {...rest}
-      ref={ref}
-      css={theme => ({
-        zIndex: 1,
-        position: "absolute",
-        margin: "0.4rem 0",
-        width: "15rem",
-        overflowY: "auto",
-        borderRadius: "0.4rem",
-        backgroundColor: theme.colors.foreground,
-      })}
-      onMouseDown={rest.onMouseDown ?? preventDefault}
-    >
-      {React.Children.count(children) ? (
-        children
-      ) : (
-        <span css={theme => ({ color: theme.colors.background })}>
-          No options
-        </span>
-      )}
-    </div>
-  );
-});
+export const Menu = React.forwardRef<HTMLDivElement, BaseMenuProps>(
+  function Menu({ children, ...rest }, ref) {
+    return (
+      <BaseMenu
+        {...rest}
+        ref={ref}
+        css={theme => ({
+          zIndex: 1,
+          position: "absolute",
+          margin: "0.4rem 0",
+          width: "15rem",
+          overflowY: "auto",
+          borderRadius: "0.4rem",
+          backgroundColor: theme.colors.foreground,
+        })}
+      >
+        {React.Children.count(children) ? (
+          children
+        ) : (
+          <span css={theme => ({ color: theme.colors.background })}>
+            No options
+          </span>
+        )}
+      </BaseMenu>
+    );
+  },
+);
 
 export const Placeholder: React.FC<JSX.IntrinsicElements["div"]> = props => (
   <div

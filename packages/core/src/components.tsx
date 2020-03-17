@@ -1,7 +1,8 @@
 import React, { Dispatch, useCallback, useRef } from "react";
 import AutosizeInput, { AutosizeInputProps } from "react-input-autosize";
 
-import { useStickyBlur } from "./hooks";
+import { AccessibilityContext } from "./context";
+import { useAccessibilityProps, useStickyBlur } from "./hooks";
 import { SelectOptionAction, FocusOptionAction } from "./reducers";
 import { simpleMemo, preventDefault } from "./utils";
 
@@ -53,6 +54,7 @@ export const Control: React.FC<ControlProps> = ({
 }) => {
   const defaultInputRef = useRef<HTMLInputElement | null>(null);
   const handleBlur = useStickyBlur(menuRef, onBlur);
+  const { inputProps: accessibilityProps } = useAccessibilityProps();
 
   return (
     <div
@@ -73,6 +75,8 @@ export const Control: React.FC<ControlProps> = ({
     >
       {children}
       <Input
+        {...rest}
+        {...accessibilityProps}
         ref={inputRef ?? defaultInputRef}
         onChange={useCallback(
           event => {
@@ -81,7 +85,6 @@ export const Control: React.FC<ControlProps> = ({
           },
           [onChange, onInputChange],
         )}
-        {...rest}
       />
     </div>
   );
@@ -91,14 +94,18 @@ export type OptionProps<T> = JSX.IntrinsicElements["div"] & {
   option: T;
   dispatch: Dispatch<SelectOptionAction<T> | FocusOptionAction<T>>;
   innerRef?: React.Ref<HTMLDivElement>;
+  isFocused?: boolean;
 };
 
 export const Option = simpleMemo(function Option<T>({
   option,
   dispatch,
   innerRef,
+  isFocused,
   ...rest
 }: OptionProps<T>) {
+  const { getOptionProps: getAccessibilityProps } = useAccessibilityProps();
+
   const onClick = useCallback(
     (event: React.SyntheticEvent) => {
       event.stopPropagation();
@@ -118,6 +125,7 @@ export const Option = simpleMemo(function Option<T>({
   return (
     <div
       {...rest}
+      {...getAccessibilityProps(option, { isFocused })}
       ref={innerRef}
       tabIndex={-1}
       onMouseDown={preventDefault}
@@ -127,3 +135,84 @@ export const Option = simpleMemo(function Option<T>({
     />
   );
 });
+
+export type MenuProps = JSX.IntrinsicElements["div"];
+
+export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(function Menu(
+  { onMouseDown, ...rest },
+  ref,
+) {
+  const { menuProps: accessibilityProps } = useAccessibilityProps();
+
+  return (
+    <div
+      {...rest}
+      {...accessibilityProps}
+      ref={ref}
+      onMouseDown={onMouseDown ?? preventDefault}
+    />
+  );
+});
+
+let runningRef = 1;
+
+export type AccessibilityPropsProviderProps<OptionType> = {
+  id?: string;
+  prefix?: string;
+  getOptionId?: (option: OptionType) => string;
+  focusedOption: OptionType | null;
+  options: OptionType[];
+};
+
+export const AccessibilityPropsProvider = <OptionType extends unknown>({
+  id: customId,
+  prefix = "natural-selection",
+  focusedOption,
+  options,
+  children,
+  getOptionId: getCustomOptionId,
+}: React.PropsWithChildren<
+  AccessibilityPropsProviderProps<OptionType>
+>): React.ReactElement => {
+  const id = useRef(customId || `${prefix}-${runningRef++}`).current;
+  const menuId = `${id}-listbox`;
+
+  const getOptionId =
+    getCustomOptionId ??
+    (option => {
+      const index = options.indexOf(option);
+      if (index < -1) {
+        throw new Error();
+      }
+
+      return `${id}-option-${index}`;
+    });
+
+  return (
+    <AccessibilityContext.Provider
+      value={{
+        controlProps: { "aria-owns": menuId, "aria-haspopup": "listbox" },
+        inputProps: {
+          id,
+          role: "combobox",
+          "aria-controls": menuId,
+          ...(focusedOption && {
+            "aria-activedescendant": getOptionId(focusedOption),
+          }),
+        },
+        menuProps: { id: menuId, role: "listbox" },
+        getOptionProps: (option, { isFocused }) => {
+          const index = options.indexOf(option as OptionType);
+
+          return {
+            role: "option",
+            "aria-selected": isFocused,
+            ...(index > -1 && { id: getOptionId(option as OptionType) }),
+          };
+        },
+      }}
+    >
+      {children}
+    </AccessibilityContext.Provider>
+  );
+};
