@@ -349,7 +349,48 @@ export const DatePicker: React.FC<{ "aria-label"?: string }> = props => {
 
   const firstOfMonth = firstOfMonthSelector(state);
 
-  const handleKeyDown = createKeyDownHandler(dispatch, state);
+  const handleDefaultKeyDown = createKeyDownHandler(dispatch, state);
+  const handleKeyDown = (event: React.KeyboardEvent): void => {
+    let horizontalMotion: number;
+    let verticalMotion: number;
+
+    switch (state.mode) {
+      case "day":
+        horizontalMotion = 1;
+        verticalMotion = 7;
+        break;
+      case "month":
+        horizontalMotion = 0;
+        verticalMotion = 1;
+        break;
+      case "year":
+        horizontalMotion = 1;
+        verticalMotion = 4;
+        break;
+      default:
+        throw new UnreachableCaseError(state.mode);
+    }
+
+    switch (event.key) {
+      case "ArrowLeft":
+        dispatch({ type: "relativeFocus", direction: -horizontalMotion });
+        break;
+      case "ArrowRight":
+        dispatch({ type: "relativeFocus", direction: horizontalMotion });
+        break;
+      case "ArrowUp":
+        dispatch({ type: "relativeFocus", direction: -verticalMotion });
+        break;
+      case "ArrowDown":
+        dispatch({ type: "relativeFocus", direction: verticalMotion });
+        break;
+      default:
+        handleDefaultKeyDown(event);
+        return;
+    }
+
+    event.preventDefault();
+  };
 
   const navOptionsNode = (
     <div
