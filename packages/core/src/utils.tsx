@@ -21,3 +21,16 @@ export const mergeNonUndefinedProperties = <T extends object>(
 
   return result;
 };
+
+export const getDefaultOptionId = <OptionType extends unknown>(
+  prefix: string,
+  option: OptionType,
+  options: OptionType[],
+): string => {
+  const index = options.indexOf(option);
+  if (index < -1) {
+    throw new Error();
+  }
+
+  return `${prefix}-option-${index}`;
+};

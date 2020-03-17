@@ -3,7 +3,7 @@ import React, { Reducer, useCallback, useMemo, useRef } from "react";
 import {
   useAugmentedReducer,
   useCallbackRef,
-  useFocusedRef,
+  useEnsuredId,
   useScrollCaptor,
   useScrollDecorator,
   createKeyDownHandler,
@@ -11,6 +11,7 @@ import {
   SelectState,
   SelectAction,
   AccessibilityPropsProvider,
+  getDefaultOptionId,
 } from "@natural-selection/core";
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
@@ -96,18 +97,23 @@ export const MultiSelect = <T extends { label: string; value: string }>({
 
   useScrollCaptor(menuRef.current);
 
-  const [focusedRef, handleFocusedRef] = useFocusedRef(
-    focusedOptionSelector(state),
+  const id = useEnsuredId(providedId);
+  const dispatch = useScrollDecorator(
+    plainDispatch,
+    getDefaultOptionId(
+      id,
+      focusedOptionSelector(state),
+      filteredOptionsSelector(state),
+    ),
   );
-  const dispatch = useScrollDecorator(plainDispatch, focusedRef);
 
   const handleKeyDown = createKeyDownHandler(dispatch, state);
 
   return (
     <AccessibilityPropsProvider
-      id={providedId}
+      id={id}
       focusedOption={focusedOptionSelector(state)}
-      options={state.options}
+      options={filteredOptionsSelector(state)}
       role="listbox"
     >
       <Container onKeyDown={handleKeyDown}>
@@ -144,7 +150,6 @@ export const MultiSelect = <T extends { label: string; value: string }>({
                     display: "flex",
                     justifyContent: "space-between",
                   }}
-                  {...handleFocusedRef(option)}
                 >
                   {option.label}
 

@@ -14,7 +14,7 @@ export const useScrollDecorator = <
   Action extends FocusOptionAction<OptionType> | RelativeFocusAction | unknown
 >(
   dispatch: Dispatch<Action>,
-  focusedRef: HTMLElement | null,
+  focusedOptionId: string | null,
 ): Dispatch<Action> => {
   const blockMouseEventsRef = useRef(false);
   const shouldScrollOnUpdateRef = useRef(false);
@@ -28,16 +28,20 @@ export const useScrollDecorator = <
   }, []);
 
   useEffect(() => {
-    if (!focusedRef || !shouldScrollOnUpdateRef.current) {
+    if (!focusedOptionId || !shouldScrollOnUpdateRef.current) {
       return;
     }
 
     shouldScrollOnUpdateRef.current = false;
-    focusedRef.scrollIntoView({
-      block: "nearest",
-      behavior: "smooth",
-    });
-  }, [focusedRef]);
+
+    const focusedNode = document.getElementById(focusedOptionId);
+    if (focusedNode) {
+      focusedNode.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
+    }
+  }, [focusedOptionId]);
 
   const dispatchRef = useRef<Dispatch<Action>>(action => {
     if (isFocusAction(action)) {

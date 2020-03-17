@@ -2,9 +2,9 @@ import React, { Dispatch, useCallback, useRef } from "react";
 import AutosizeInput, { AutosizeInputProps } from "react-input-autosize";
 
 import { AriaRoles, AccessibilityContext } from "./context";
-import { useAccessibilityProps, useStickyBlur } from "./hooks";
+import { useAccessibilityProps, useEnsuredId, useStickyBlur } from "./hooks";
 import { SelectOptionAction, FocusOptionAction } from "./reducers";
-import { simpleMemo, preventDefault } from "./utils";
+import { simpleMemo, preventDefault, getDefaultOptionId } from "./utils";
 
 // Using the generic type paramters on React.forwardRef results in weirdly
 // typed declaration files - every prop becomes required
@@ -154,13 +154,15 @@ export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(function Menu(
   );
 });
 
-let runningRef = 1;
-
 export type AccessibilityPropsProviderProps<OptionType> = {
   role: AriaRoles;
   id?: string;
   prefix?: string;
-  getOptionId?: (option: OptionType) => string;
+  getOptionId?: (
+    prefix: string,
+    option: OptionType,
+    options: OptionType[],
+  ) => string;
   getOptionLabel?: (option: OptionType) => string | number | undefined;
   focusedOption: OptionType | null;
   options: OptionType[];
@@ -168,8 +170,7 @@ export type AccessibilityPropsProviderProps<OptionType> = {
 
 export const AccessibilityPropsProvider = <OptionType extends unknown>({
   role,
-  id: customId,
-  prefix = "natural-selection",
+  id: providedId,
   focusedOption,
   options,
   children,
@@ -178,19 +179,10 @@ export const AccessibilityPropsProvider = <OptionType extends unknown>({
 }: React.PropsWithChildren<
   AccessibilityPropsProviderProps<OptionType>
 >): React.ReactElement => {
-  const id = useRef(customId || `${prefix}-${runningRef++}`).current;
+  const id = useEnsuredId(providedId);
   const menuId = `${id}-${role}`;
 
-  const getOptionId =
-    getCustomOptionId ??
-    (option => {
-      const index = options.indexOf(option);
-      if (index < -1) {
-        throw new Error();
-      }
-
-      return `${id}-option-${index}`;
-    });
+  const getOptionId = getCustomOptionId ?? getDefaultOptionId;
 
   const getOptionLabel =
     getCustomOptionLabel ?? (option => (option as { label: string }).label);
@@ -204,7 +196,7 @@ export const AccessibilityPropsProvider = <OptionType extends unknown>({
           role: "combobox",
           "aria-controls": menuId,
           ...(focusedOption && {
-            "aria-activedescendant": getOptionId(focusedOption),
+            "aria-activedescendant": getOptionId(id, focusedOption, options),
           }),
         },
         menuProps: { id: menuId, role },
@@ -215,7 +207,9 @@ export const AccessibilityPropsProvider = <OptionType extends unknown>({
           return {
             role: "option",
             "aria-selected": isFocused,
-            ...(index > -1 && { id: getOptionId(option as OptionType) }),
+            ...(index > -1 && {
+              id: getOptionId(id, option as OptionType, options),
+            }),
             ...(label && { "aria-label": label }),
           };
         },

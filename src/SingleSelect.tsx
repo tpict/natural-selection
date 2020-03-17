@@ -2,7 +2,7 @@ import React, { Reducer, useMemo, useCallback, useRef } from "react";
 
 import {
   useCallbackRef,
-  useFocusedRef,
+  useEnsuredId,
   useScrollCaptor,
   useScrollDecorator,
   useAugmentedReducer,
@@ -11,6 +11,7 @@ import {
   SelectState,
   SelectAction,
   AccessibilityPropsProvider,
+  getDefaultOptionId,
 } from "@natural-selection/core";
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
@@ -89,10 +90,15 @@ export const SingleSelect = <
     onStateChange,
   );
 
-  const [focusedRef, handleFocusedRef] = useFocusedRef(
-    focusedOptionSelector(state),
+  const id = useEnsuredId(providedId);
+  const dispatch = useScrollDecorator(
+    plainDispatch,
+    getDefaultOptionId(
+      id,
+      focusedOptionSelector(state),
+      filteredOptionsSelector(state),
+    ),
   );
-  const dispatch = useScrollDecorator(plainDispatch, focusedRef);
 
   const menuRef = useCallbackRef<HTMLDivElement>();
   useScrollCaptor(menuRef.current);
@@ -101,9 +107,9 @@ export const SingleSelect = <
 
   return (
     <AccessibilityPropsProvider
-      id={providedId}
+      id={id}
       focusedOption={focusedOptionSelector(state)}
-      options={state.options}
+      options={filteredOptionsSelector(state)}
       role="listbox"
     >
       <Container onKeyDown={handleKeyDown}>
@@ -132,7 +138,6 @@ export const SingleSelect = <
                 isActive={state.value?.value === option.value}
                 isFocused={option === focusedOptionSelector(state)}
                 dispatch={dispatch}
-                {...handleFocusedRef(option)}
               >
                 {option.label}
               </Option>
