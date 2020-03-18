@@ -1,64 +1,77 @@
 import { Reducer, Dispatch, useEffect, useRef, useReducer } from "react";
 
-import { usePrevious } from "./usePrevious";
 import { mergeNonUndefinedProperties } from "../utils";
 
-type PropsUpdateAction<Props> = { type: "propsUpdate"; props: Props };
+export type AugmentedInitAction = { type: "init" };
+const isInitAction = (action: {
+  type: string;
+}): action is AugmentedInitAction => action.type === "init";
+
+export type PropsUpdateAction<Props> = { type: "updateProps"; props: Props };
 const isPropsUpdateAction = <Props extends unknown>(action: {
   type: string;
-}): action is PropsUpdateAction<Props> => action.type === "propsUpdate";
+}): action is PropsUpdateAction<Props> => action.type === "updateProps";
+
+export type AugmentedReducerCustom<State, Action, Props> = (
+  state: State,
+  action: Action | PropsUpdateAction<Props> | AugmentedInitAction,
+  reducer: Reducer<
+    State,
+    Action | PropsUpdateAction<Props> | AugmentedInitAction
+  >,
+) => State;
+
+export type AugmentedReducerChangeHandler<State, Action, Props> = (
+  state: State,
+  action: Action | PropsUpdateAction<Props> | AugmentedInitAction,
+  prevState: State,
+) => void;
 
 export const useAugmentedReducer = <
-  State extends object,
+  State extends {},
   Action extends { type: string },
   Props = Partial<State>
 >(
   reducer: Reducer<State, Action>,
   initialState: State,
-  // TODO: don't know why this union is required, {} should fulfill Props
-  props: Props | {} = {},
-  customReducer?: (
-    state: State,
-    action: Action,
-    reducer: Reducer<State, Action>,
-  ) => State,
-  onStateChange?: (state: State, action: Action, prevState: State) => void,
+  props: Props = {} as Props,
+  customReducer?: AugmentedReducerCustom<State, Action, Props>,
+  onStateChange?: AugmentedReducerChangeHandler<State, Action, Props>,
 ): [State, Dispatch<Action | PropsUpdateAction<Props>>] => {
   const propsRef = useRef(props);
-  const previousPropsRef = usePrevious(props);
   const customReducerRef = useRef(customReducer);
   const onStateChangeRef = useRef(onStateChange);
 
-  useEffect(() => {
-    propsRef.current = props;
-    customReducerRef.current = customReducer;
-    onStateChangeRef.current = onStateChange;
-  }, [props, customReducer, onStateChange]);
-
-  const { current: reduce } = useRef<
-    Reducer<State, Action | PropsUpdateAction<Props>>
+  // Wrap the given reducer with handlers for the "updateProps" and "init"
+  // actions.
+  const { current: propsUpdateReducer } = useRef<
+    Reducer<State, Action | PropsUpdateAction<Props> | AugmentedInitAction>
   >((prevState, action) => {
     if (isPropsUpdateAction(action)) {
       return { ...prevState, ...action.props };
     }
 
+    if (isInitAction(action)) {
+      return prevState;
+    }
+
+    return reducer(prevState, action);
+  });
+
+  const { current: reduce } = useRef<
+    Reducer<State, Action | PropsUpdateAction<Props> | AugmentedInitAction>
+  >((prevState, action) => {
     const { current: props } = propsRef;
-    const { current: previousProps } = previousPropsRef;
     const { current: customReducer } = customReducerRef;
     const { current: onStateChange } = onStateChangeRef;
 
-    // Only merge props on top if they've changed since the last dispatch,
-    // otherwise no-op actions will trigger a render.
-    let prevStateWithProps = prevState;
-    if (props !== previousProps) {
-      prevStateWithProps = mergeNonUndefinedProperties(prevState, props);
-    }
-
     let nextState: State;
+    const prevStateWithProps = prevState;
+
     if (customReducer) {
-      nextState = customReducer(prevStateWithProps, action, reducer);
+      nextState = customReducer(prevStateWithProps, action, propsUpdateReducer);
     } else {
-      nextState = reducer(prevStateWithProps, action);
+      nextState = propsUpdateReducer(prevStateWithProps, action);
     }
 
     if (nextState !== prevStateWithProps) {
@@ -74,5 +87,30 @@ export const useAugmentedReducer = <
     return nextState;
   });
 
-  return useReducer(reduce, mergeNonUndefinedProperties(initialState, props));
+  let mergedInitialState = mergeNonUndefinedProperties(initialState, props);
+
+  const hasInitializedRef = useRef(false);
+  if (!hasInitializedRef.current) {
+    customReducer &&
+      (mergedInitialState = customReducer(
+        mergedInitialState,
+        { type: "init" },
+        propsUpdateReducer,
+      ));
+    hasInitializedRef.current = true;
+  }
+
+  const [state, dispatch] = useReducer(reduce, mergedInitialState);
+
+  useEffect(() => {
+    propsRef.current = props;
+    dispatch({ type: "updateProps", props });
+  }, [props]);
+
+  useEffect(() => {
+    customReducerRef.current = customReducer;
+    onStateChangeRef.current = onStateChange;
+  }, [customReducer, onStateChange]);
+
+  return [state, dispatch];
 };

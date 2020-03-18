@@ -35,11 +35,6 @@ export const SingleSelectExample: React.FC = () => {
         options={options}
         value={value}
         onStateChange={({ value }) => setValue(value)}
-        customReducer={(state, action, reducer) => {
-          const nextState = reducer(state, action);
-          nextState.value = nextState.options.find(({ value }) => value === "3") || null;
-          return nextState;
-        }}
       />
     </>
   );

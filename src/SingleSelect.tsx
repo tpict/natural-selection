@@ -12,6 +12,8 @@ import {
   SelectAction,
   AccessibilityPropsProvider,
   getDefaultOptionId,
+  AugmentedReducerCustom,
+  AugmentedReducerChangeHandler,
 } from "@natural-selection/core";
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
@@ -23,16 +25,16 @@ type SingleSelectProps<T> = {
   "aria-label"?: string;
   options: T[];
   value?: T | null;
-  customReducer?: (
-    state: State<T>,
-    action: SelectAction<T>,
-    reducer: Reducer<State<T>, SelectAction<T>>,
-  ) => State<T>;
-  onStateChange?: (
-    state: State<T>,
-    action: SelectAction<T>,
-    prevState: State<T>,
-  ) => void;
+  customReducer?: AugmentedReducerCustom<
+    State<T>,
+    SelectAction<T>,
+    Partial<Pick<SingleSelectProps<T>, "value" | "options">>
+  >;
+  onStateChange?: AugmentedReducerChangeHandler<
+    State<T>,
+    SelectAction<T>,
+    Partial<Pick<SingleSelectProps<T>, "value" | "options">>
+  >;
 };
 
 type State<T> = SelectState & {
