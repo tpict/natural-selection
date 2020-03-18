@@ -1,6 +1,6 @@
 {
   "name": "@natural-selection/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Core hooks and components for Natural Selection",
   "main": "lib/index.js",
   "repository": {
