@@ -1,18 +1,16 @@
-import {
-  Reducer,
-  Dispatch,
-  useEffect,
-  useRef,
-  useMemo,
-  useReducer,
-} from "react";
+import { Reducer, Dispatch, useEffect, useRef, useReducer } from "react";
 
 import { usePrevious } from "./usePrevious";
 import { mergeNonUndefinedProperties } from "../utils";
 
+type PropsUpdateAction<Props> = { type: "propsUpdate"; props: Props };
+const isPropsUpdateAction = <Props extends unknown>(action: {
+  type: string;
+}): action is PropsUpdateAction<Props> => action.type === "propsUpdate";
+
 export const useAugmentedReducer = <
   State extends object,
-  Action,
+  Action extends { type: string },
   Props = Partial<State>
 >(
   reducer: Reducer<State, Action>,
@@ -25,7 +23,7 @@ export const useAugmentedReducer = <
     reducer: Reducer<State, Action>,
   ) => State,
   onStateChange?: (state: State, action: Action, prevState: State) => void,
-): [State, Dispatch<Action>] => {
+): [State, Dispatch<Action | PropsUpdateAction<Props>>] => {
   const propsRef = useRef(props);
   const previousPropsRef = usePrevious(props);
   const customReducerRef = useRef(customReducer);
@@ -37,51 +35,44 @@ export const useAugmentedReducer = <
     onStateChangeRef.current = onStateChange;
   }, [props, customReducer, onStateChange]);
 
-  const { current: reduce } = useRef<Reducer<State, Action>>(
-    (prevState, action) => {
-      const { current: props } = propsRef;
-      const { current: previousProps } = previousPropsRef;
-      const { current: customReducer } = customReducerRef;
-      const { current: onStateChange } = onStateChangeRef;
+  const { current: reduce } = useRef<
+    Reducer<State, Action | PropsUpdateAction<Props>>
+  >((prevState, action) => {
+    if (isPropsUpdateAction(action)) {
+      return { ...prevState, ...action.props };
+    }
 
-      // Only merge props on top if they've changed since the last dispatch,
-      // otherwise no-op actions will trigger a render.
-      let prevStateWithProps = prevState;
-      if (props !== previousProps) {
-        prevStateWithProps = mergeNonUndefinedProperties(prevState, props);
-      }
+    const { current: props } = propsRef;
+    const { current: previousProps } = previousPropsRef;
+    const { current: customReducer } = customReducerRef;
+    const { current: onStateChange } = onStateChangeRef;
 
-      let nextState: State;
-      if (customReducer) {
-        nextState = customReducer(prevStateWithProps, action, reducer);
-      } else {
-        nextState = reducer(prevStateWithProps, action);
-      }
+    // Only merge props on top if they've changed since the last dispatch,
+    // otherwise no-op actions will trigger a render.
+    let prevStateWithProps = prevState;
+    if (props !== previousProps) {
+      prevStateWithProps = mergeNonUndefinedProperties(prevState, props);
+    }
 
-      if (nextState !== prevStateWithProps) {
-        // Only call this on state changes.
-        onStateChange?.(nextState, action, prevStateWithProps);
+    let nextState: State;
+    if (customReducer) {
+      nextState = customReducer(prevStateWithProps, action, reducer);
+    } else {
+      nextState = reducer(prevStateWithProps, action);
+    }
 
-        // We need to merge props on top after the reducer is done in case it
-        // overrode any of them, but we should only do this if the state
-        // actually changed, otherwise no-op actions will trigger a render.
-        return mergeNonUndefinedProperties(nextState, props);
-      }
+    if (nextState !== prevStateWithProps) {
+      // Only call this on state changes.
+      onStateChange?.(nextState, action, prevStateWithProps);
 
-      return nextState;
-    },
-  );
+      // We need to merge props on top after the reducer is done in case it
+      // overrode any of them, but we should only do this if the state
+      // actually changed, otherwise no-op actions will trigger a render.
+      return mergeNonUndefinedProperties(nextState, props);
+    }
 
-  const [innerState, dispatch] = useReducer(
-    reduce,
-    mergeNonUndefinedProperties(initialState, props),
-  );
+    return nextState;
+  });
 
-  // Redundant props merge so a render will be triggered after props change, even
-  // without a corresponding action
-  const state = useMemo(() => {
-    return mergeNonUndefinedProperties(innerState, props);
-  }, [innerState, props]);
-
-  return [state, dispatch];
+  return useReducer(reduce, mergeNonUndefinedProperties(initialState, props));
 };
