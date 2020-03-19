@@ -94,6 +94,7 @@ export type OptionProps<T> = JSX.IntrinsicElements["div"] & {
   option: T;
   dispatch: Dispatch<SelectOptionAction<T> | FocusOptionAction<T>>;
   innerRef?: React.Ref<HTMLDivElement>;
+  isDisabled?: boolean;
   isFocused?: boolean;
 };
 
@@ -101,6 +102,7 @@ export const Option = simpleMemo(function Option<T>({
   option,
   dispatch,
   innerRef,
+  isDisabled,
   isFocused,
   ...rest
 }: OptionProps<T>) {
@@ -129,9 +131,11 @@ export const Option = simpleMemo(function Option<T>({
       ref={innerRef}
       tabIndex={-1}
       onMouseDown={preventDefault}
-      onClick={onClick}
-      onMouseMove={onHover}
-      onMouseOver={onHover}
+      {...(!isDisabled && {
+        onClick: onClick,
+        onMouseMove: onHover,
+        onMouseOver: onHover,
+      })}
     />
   );
 });
