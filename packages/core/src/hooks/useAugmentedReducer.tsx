@@ -50,12 +50,10 @@ export const useAugmentedReducer = <
   props: Props = {} as Props,
   customReducer?: AugmentedReducerCustom<State, Action, Props>,
   onStateChange?: AugmentedReducerChangeHandler<State, Action, Props>,
-): [State, Dispatch<Action | PropsUpdateAction<Props>>, () => State] => {
+): [State, Dispatch<Action | PropsUpdateAction<Props>>] => {
   const propsRef = useRef(props);
   const customReducerRef = useRef(customReducer);
   const onStateChangeRef = useRef(onStateChange);
-
-  const stateRef = useRef(initialState);
 
   // Wrap the given reducer with handlers for the "updateProps" and "init"
   // actions.
@@ -97,11 +95,10 @@ export const useAugmentedReducer = <
       // actually changed, otherwise no-op actions will trigger a render.
       nextState = mergeNonUndefinedProperties(nextState, props);
       if (shallowCompare(nextState, prevState)) {
-        nextState = prevState;
+        return prevState;
       }
     }
 
-    stateRef.current = nextState;
     return nextState;
   });
 
@@ -115,7 +112,6 @@ export const useAugmentedReducer = <
         { type: "init" },
         propsUpdateReducer,
       ));
-    stateRef.current = mergedInitialState;
     hasInitializedRef.current = true;
   }
 
@@ -131,7 +127,5 @@ export const useAugmentedReducer = <
     onStateChangeRef.current = onStateChange;
   }, [customReducer, onStateChange]);
 
-  const { current: getState } = useRef(() => stateRef.current);
-
-  return [state, dispatch, getState];
+  return [state, dispatch];
 };

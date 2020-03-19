@@ -10,18 +10,11 @@ export const createKeyDownHandler = (
     | RelativeFocusAction
     | { type: "clearLast" }
   >,
-  getState:
-    | (() => {
-        inputValue: string;
-        isMenuOpen: boolean;
-      })
-    | {
-        inputValue: string;
-        isMenuOpen: boolean;
-      },
+  state: {
+    inputValue: string;
+    isMenuOpen: boolean;
+  },
 ) => (event: React.KeyboardEvent): void => {
-  const state = getState instanceof Function ? getState() : getState;
-
   switch (event.key) {
     case "ArrowDown":
       dispatch({

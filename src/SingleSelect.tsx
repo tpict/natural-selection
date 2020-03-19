@@ -78,7 +78,7 @@ export const SingleSelect = <
     },
   );
 
-  const [state, plainDispatch, getState] = useAugmentedReducer(
+  const [state, plainDispatch] = useAugmentedReducer(
     reducer,
     {
       isMenuOpen: false,
@@ -105,9 +105,7 @@ export const SingleSelect = <
   const menuRef = useCallbackRef<HTMLDivElement>();
   useScrollCaptor(menuRef.current);
   const placementStyles = useMenuPlacementStyles(menuRef.current);
-  const { current: handleKeyDown } = useRef(
-    createKeyDownHandler(dispatch, getState),
-  );
+  const handleKeyDown = createKeyDownHandler(dispatch, state);
 
   return (
     <AccessibilityPropsProvider
