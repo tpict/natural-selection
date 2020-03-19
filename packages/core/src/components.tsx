@@ -102,6 +102,7 @@ export const Control = ({
 };
 
 export type OptionProps<T> = JSX.IntrinsicElements["div"] & {
+  as?: React.ElementType;
   option: T;
   dispatch: Dispatch<SelectOptionAction<T> | FocusOptionAction<T>>;
   innerRef?: React.Ref<HTMLDivElement>;
@@ -110,6 +111,7 @@ export type OptionProps<T> = JSX.IntrinsicElements["div"] & {
 };
 
 export const Option = simpleMemo(function Option<T>({
+  as: Component = "div",
   option,
   dispatch,
   innerRef,
@@ -136,7 +138,7 @@ export const Option = simpleMemo(function Option<T>({
   );
 
   return (
-    <div
+    <Component
       {...rest}
       {...getAccessibilityProps(option, { isFocused })}
       ref={innerRef}
