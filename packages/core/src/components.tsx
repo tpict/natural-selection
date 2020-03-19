@@ -37,9 +37,10 @@ export type ControlProps = Omit<InputProps, "inputRef"> & {
   onInputChange: (value: string) => void;
   menuRef: HTMLElement | null;
   inputRef?: React.MutableRefObject<HTMLInputElement | null>;
+  children: React.ReactNode | ((input: React.ReactNode) => React.ReactNode);
 };
 
-export const Control: React.FC<ControlProps> = ({
+export const Control = ({
   children,
   inputRef,
   menuRef,
@@ -51,10 +52,25 @@ export const Control: React.FC<ControlProps> = ({
   onChange,
   onInputChange,
   ...rest
-}) => {
+}: ControlProps): React.ReactElement => {
   const defaultInputRef = useRef<HTMLInputElement | null>(null);
   const handleBlur = useStickyBlur(menuRef, onBlur);
   const { inputProps: accessibilityProps } = useAccessibilityProps();
+
+  const input = (
+    <Input
+      {...rest}
+      {...accessibilityProps}
+      ref={inputRef ?? defaultInputRef}
+      onChange={useCallback(
+        event => {
+          onChange?.(event);
+          onInputChange?.(event.currentTarget.value);
+        },
+        [onChange, onInputChange],
+      )}
+    />
+  );
 
   return (
     <div
@@ -73,19 +89,14 @@ export const Control: React.FC<ControlProps> = ({
         onClick,
       }}
     >
-      {children}
-      <Input
-        {...rest}
-        {...accessibilityProps}
-        ref={inputRef ?? defaultInputRef}
-        onChange={useCallback(
-          event => {
-            onChange?.(event);
-            onInputChange?.(event.currentTarget.value);
-          },
-          [onChange, onInputChange],
-        )}
-      />
+      {children instanceof Function ? (
+        children(input)
+      ) : (
+        <>
+          {children}
+          {input}
+        </>
+      )}
     </div>
   );
 };
