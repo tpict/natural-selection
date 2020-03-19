@@ -21,10 +21,11 @@
     "start": "webpack-dev-server",
     "build:lib": "cd packages/core && yarn && tsc && rm -rf node_modules",
     "publish:lib": "cd packages/core && yarn publish",
-    "test:cypress": "start-server-and-test start http://localhost:8080 cypress",
+    "test": "start-server-and-test start http://localhost:8080 cypress",
     "test:interactive": "start-server-and-test start http://localhost:8080 cypress:interactive",
     "cypress": "cypress run --spec \"./cypress/integration/natural-selection/*.spec.tsx\"",
-    "cypress:interactive": "cypress open"
+    "cypress:interactive": "cypress open",
+    "lint:lib": "eslint packages/core/src/**/*.tsx"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",
@@ -49,6 +50,7 @@
     "cypress": "^4.0.2",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.18.3",
     "eslint-plugin-react-hooks": "^2.3.0",

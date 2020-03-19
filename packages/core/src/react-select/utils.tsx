@@ -2,8 +2,9 @@
 // NO OP
 // ==============================
 
-export const noop = () => {};
-export const emptyString = () => "";
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export const noop = (): void => {};
+export const emptyString = (): string => "";
 
 // ==============================
 // Scroll Helpers

@@ -5,9 +5,11 @@ module.exports =  {
     'prettier/@typescript-eslint',
     'plugin:react/recommended',
     'plugin:prettier/recommended',
+    'plugin:jsx-a11y/recommended',
   ],
   plugins: [
-    "react-hooks"
+    "react-hooks",
+    "jsx-a11y",
   ],
   parserOptions:  {
     ecmaVersion:  2018,
