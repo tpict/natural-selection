@@ -2,6 +2,19 @@ import { Reducer, Dispatch, useEffect, useRef, useReducer } from "react";
 
 import { mergeNonUndefinedProperties } from "../utils";
 
+// https://stackoverflow.com/a/52323412
+const shallowCompare = <Obj1 extends object, Obj2 extends object>(
+  obj1: Obj1,
+  obj2: Obj2,
+): boolean =>
+  Object.keys(obj1).length === Object.keys(obj2).length &&
+  Object.keys(obj1).every(
+    key =>
+      obj2.hasOwnProperty(key) &&
+      (obj1[key as keyof Obj1] as unknown) ===
+        (obj2[key as keyof Obj2] as unknown),
+  );
+
 export type AugmentedInitAction = { type: "init" };
 const isInitAction = (action: {
   type: string;
@@ -66,22 +79,24 @@ export const useAugmentedReducer = <
     const { current: onStateChange } = onStateChangeRef;
 
     let nextState: State;
-    const prevStateWithProps = prevState;
 
     if (customReducer) {
-      nextState = customReducer(prevStateWithProps, action, propsUpdateReducer);
+      nextState = customReducer(prevState, action, propsUpdateReducer);
     } else {
-      nextState = propsUpdateReducer(prevStateWithProps, action);
+      nextState = propsUpdateReducer(prevState, action);
     }
 
-    if (nextState !== prevStateWithProps) {
+    if (nextState !== prevState) {
       // Only call this on state changes.
-      onStateChange?.(nextState, action, prevStateWithProps);
+      onStateChange?.(nextState, action, prevState);
 
       // We need to merge props on top after the reducer is done in case it
       // overrode any of them, but we should only do this if the state
       // actually changed, otherwise no-op actions will trigger a render.
-      return mergeNonUndefinedProperties(nextState, props);
+      nextState = mergeNonUndefinedProperties(nextState, props);
+      if (shallowCompare(nextState, prevState)) {
+        return prevState;
+      }
     }
 
     return nextState;
