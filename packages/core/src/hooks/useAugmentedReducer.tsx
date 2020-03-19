@@ -48,7 +48,7 @@ export const useAugmentedReducer = <
     Reducer<State, Action | PropsUpdateAction<Props> | AugmentedInitAction>
   >((prevState, action) => {
     if (isPropsUpdateAction(action)) {
-      return { ...prevState, ...action.props };
+      return mergeNonUndefinedProperties(prevState, action.props);
     }
 
     if (isInitAction(action)) {
