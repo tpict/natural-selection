@@ -36,8 +36,10 @@
     "@babel/preset-env": "^7.8.4",
     "@babel/preset-react": "^7.8.3",
     "@babel/preset-typescript": "^7.8.3",
+    "@cypress/code-coverage": "^1.14.0",
     "@emotion/babel-plugin": "^11.0.0-next.10",
     "@emotion/babel-preset-css-prop": "^11.0.0-next.10",
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@testing-library/cypress": "^5.3.0",
     "@types/lodash-es": "^4.17.3",
     "@types/react": "^16.9.22",
@@ -47,6 +49,7 @@
     "@typescript-eslint/eslint-plugin": "^2.19.2",
     "@typescript-eslint/parser": "^2.19.2",
     "babel-loader": "^8.0.6",
+    "babel-plugin-istanbul": "^6.0.0",
     "cypress": "^4.0.2",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
@@ -56,8 +59,12 @@
     "eslint-plugin-react-hooks": "^2.3.0",
     "fork-ts-checker-webpack-plugin": "^4.0.4",
     "html-loader": "^0.5.5",
+    "istanbul-lib-coverage": "^3.0.0",
+    "nyc": "^15.0.0",
     "prettier": "^1.19.1",
+    "source-map-support": "^0.5.16",
     "start-server-and-test": "^1.10.8",
+    "ts-node": "^8.7.0",
     "tsconfig-paths-webpack-plugin": "^3.2.0",
     "typescript": "^3.7.5",
     "webpack": "^4.41.6",
@@ -66,5 +73,10 @@
   },
   "prettier": {
     "trailingComma": "all"
+  },
+  "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "all": true,
+    "include": ["packages/core/src/**/*.tsx"]
   }
 }
