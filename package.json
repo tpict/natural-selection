@@ -21,10 +21,12 @@
     "start": "webpack-dev-server",
     "build:lib": "cd packages/core && yarn && tsc && rm -rf node_modules",
     "publish:lib": "cd packages/core && yarn publish",
-    "test": "start-server-and-test start http://localhost:8080 cypress",
+    "test": "start-server-and-test start http://localhost:8080 coverage",
+    "test:local": "start-server-and-test start http://localhost:8080 cypress",
     "test:interactive": "start-server-and-test start http://localhost:8080 cypress:interactive",
     "cypress": "cypress run --spec \"./cypress/integration/natural-selection/*.spec.tsx\"",
     "cypress:interactive": "cypress open",
+    "coverage": "yarn cypress && coveralls < coverage/lcov.info",
     "lint:lib": "eslint packages/core/src/**/*.tsx"
   },
   "devDependencies": {
@@ -50,6 +52,7 @@
     "@typescript-eslint/parser": "^2.19.2",
     "babel-loader": "^8.0.6",
     "babel-plugin-istanbul": "^6.0.0",
+    "coveralls": "^3.0.11",
     "cypress": "^4.0.2",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
@@ -77,6 +80,8 @@
   "nyc": {
     "extends": "@istanbuljs/nyc-config-typescript",
     "all": true,
-    "include": ["packages/core/src/**/*.tsx"]
+    "include": [
+      "packages/core/src/**/*.tsx"
+    ]
   }
 }
