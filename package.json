@@ -82,6 +82,9 @@
     "all": true,
     "include": [
       "packages/core/src/**/*.tsx"
+    ],
+    "exclude": [
+      "packages/core/src/react-select/**/*.tsx"
     ]
   }
 }
