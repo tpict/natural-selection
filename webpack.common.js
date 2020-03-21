@@ -7,13 +7,6 @@ const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  mode: "development",
-  devtool: "inline-source-map",
-
-  devServer: {
-    historyApiFallback: true,
-  },
-
   entry: {
     app: "./src/index.tsx",
   },
