@@ -1,17 +1,13 @@
 import React from "react";
-import { useRouteMatch, Redirect, Link, Route, Switch } from "react-router-dom";
+import { Link, Route, Switch } from "react-router-dom";
 
 import { SingleSelectExample } from "./SingleSelectExample";
 import { MultiSelectExample } from "./MultiSelectExample";
 import { DatePickerExample } from "./DatePickerExample";
 
 export const Examples: React.FC = () => {
-  const match = useRouteMatch("/examples");
-
   return (
     <>
-      {match?.isExact && <Redirect to="/examples/single-select" />}
-
       <div css={{ display: "flex", height: "100%" }}>
         <div
           css={theme => ({
@@ -23,6 +19,10 @@ export const Examples: React.FC = () => {
           })}
         >
           <ul>
+            <li>
+              <Link to="/examples">Introduction</Link>
+            </li>
+
             <li>
               <Link to="/examples/single-select">Single select</Link>
             </li>
@@ -54,6 +54,8 @@ export const Examples: React.FC = () => {
             <Route path="/examples/date-picker">
               <DatePickerExample />
             </Route>
+
+            <Route path="/examples">Hello world</Route>
           </Switch>
         </div>
       </div>
