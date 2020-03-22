@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import dayOfYear from "dayjs/plugin/dayOfYear";
 import calendar from "dayjs/plugin/calendar";
 
-import App from "./App";
+import { App } from "./App";
 
 dayjs.extend(dayOfYear);
 dayjs.extend(calendar);
