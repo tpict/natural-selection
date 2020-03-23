@@ -3,15 +3,13 @@ import React, { Reducer, useCallback, useMemo, useRef } from "react";
 import {
   useAugmentedReducer,
   useCallbackRef,
-  useEnsuredId,
   useScrollCaptor,
-  useScrollDecorator,
+  useScrollToFocused,
   createKeyDownHandler,
   selectReducer,
   SelectState,
   SelectAction,
   AccessibilityPropsProvider,
-  getDefaultOptionId,
   AugmentedReducerCustom,
   AugmentedReducerChangeHandler,
 } from "@natural-selection/core";
@@ -43,7 +41,7 @@ type State<T> = SelectState & {
 };
 
 export const MultiSelect = <T extends { label: string; value: string }>({
-  id: providedId,
+  id,
   options,
   value,
   customReducer,
@@ -85,7 +83,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
     },
   );
 
-  const [state, plainDispatch] = useAugmentedReducer(
+  const [state, dispatch] = useAugmentedReducer(
     reducer,
     {
       isMenuOpen: false,
@@ -99,22 +97,10 @@ export const MultiSelect = <T extends { label: string; value: string }>({
   );
 
   const menuRef = useCallbackRef<HTMLDivElement>();
-
   const placementStyles = useMenuPlacementStyles(menuRef.current);
-
   useScrollCaptor(menuRef.current);
-
-  const id = useEnsuredId(providedId);
-  const dispatch = useScrollDecorator(
-    plainDispatch,
-    getDefaultOptionId(
-      id,
-      focusedOptionSelector(state),
-      filteredOptionsSelector(state),
-    ),
-  );
-
-  const handleKeyDown = createKeyDownHandler(dispatch, state);
+  const scrollToFocused = useScrollToFocused(menuRef.current);
+  const handleKeyDown = createKeyDownHandler(dispatch, state, scrollToFocused);
 
   return (
     <AccessibilityPropsProvider

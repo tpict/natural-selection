@@ -1,17 +1,15 @@
-import React, { Reducer, useMemo, useCallback, useRef } from "react";
+import React, { useMemo, useCallback } from "react";
 
 import {
   useCallbackRef,
-  useEnsuredId,
   useScrollCaptor,
-  useScrollDecorator,
+  useScrollToFocused,
   useAugmentedReducer,
   createKeyDownHandler,
   selectReducer,
   SelectState,
   SelectAction,
   AccessibilityPropsProvider,
-  getDefaultOptionId,
   AugmentedReducerCustom,
   AugmentedReducerChangeHandler,
 } from "@natural-selection/core";
@@ -42,43 +40,44 @@ type State<T> = SelectState & {
   value: T | null;
 };
 
+const reducer = <OptionType extends { label: string }>(
+  state: State<OptionType>,
+  action: SelectAction<OptionType>,
+): State<OptionType> => {
+  switch (action.type) {
+    case "selectOption":
+      state = {
+        ...state,
+        value: action.option,
+      };
+      break;
+    case "selectFocused":
+      state = {
+        ...state,
+        value: filteredOptionsSelector(state)[state.focusedIndex],
+      };
+      break;
+    case "clearLast":
+      state = { ...state, value: null };
+      break;
+  }
+
+  return selectReducer(state, action, {
+    visibleOptionsSelector: filteredOptionsSelector,
+  });
+};
+
 export const SingleSelect = <
   T extends { value: string; label: string; isDisabled?: boolean }
 >({
-  id: providedId,
+  id,
   options,
   value,
   customReducer,
   onStateChange,
   ...rest
 }: SingleSelectProps<T>): React.ReactElement => {
-  const { current: reducer } = useRef<Reducer<State<T>, SelectAction<T>>>(
-    (state, action) => {
-      switch (action.type) {
-        case "selectOption":
-          state = {
-            ...state,
-            value: action.option,
-          };
-          break;
-        case "selectFocused":
-          state = {
-            ...state,
-            value: filteredOptionsSelector(state)[state.focusedIndex],
-          };
-          break;
-        case "clearLast":
-          state = { ...state, value: null };
-          break;
-      }
-
-      return selectReducer(state, action, {
-        visibleOptionsSelector: filteredOptionsSelector,
-      });
-    },
-  );
-
-  const [state, plainDispatch] = useAugmentedReducer(
+  const [state, dispatch] = useAugmentedReducer(
     reducer,
     {
       isMenuOpen: false,
@@ -92,20 +91,11 @@ export const SingleSelect = <
     onStateChange,
   );
 
-  const id = useEnsuredId(providedId);
-  const dispatch = useScrollDecorator(
-    plainDispatch,
-    getDefaultOptionId(
-      id,
-      focusedOptionSelector(state),
-      filteredOptionsSelector(state),
-    ),
-  );
-
   const menuRef = useCallbackRef<HTMLDivElement>();
   useScrollCaptor(menuRef.current);
+  const scrollToFocused = useScrollToFocused(menuRef.current);
   const placementStyles = useMenuPlacementStyles(menuRef.current);
-  const handleKeyDown = createKeyDownHandler(dispatch, state);
+  const handleKeyDown = createKeyDownHandler(dispatch, state, scrollToFocused);
 
   return (
     <AccessibilityPropsProvider

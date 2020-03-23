@@ -5,5 +5,5 @@ export * from "./useEnsuredId";
 export * from "./useMenuPlacement";
 export * from "./usePrevious";
 export * from "./useScrollCaptor";
-export * from "./useScrollDecorator";
+export * from "./useScrollToFocused";
 export * from "./useStickyBlur";

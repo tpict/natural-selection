@@ -14,9 +14,12 @@ export const createKeyDownHandler = (
     inputValue: string;
     isMenuOpen: boolean;
   },
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  scrollToFocused: () => void = () => {},
 ) => (event: React.KeyboardEvent): void => {
   switch (event.key) {
     case "ArrowDown":
+      scrollToFocused();
       dispatch({
         type: "relativeFocus",
         direction: 1,
@@ -24,6 +27,7 @@ export const createKeyDownHandler = (
       });
       break;
     case "ArrowUp":
+      scrollToFocused();
       dispatch({
         type: "relativeFocus",
         direction: -1,
