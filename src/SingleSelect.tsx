@@ -69,7 +69,7 @@ export const SingleSelect = <
   onStateChange,
   ...rest
 }: SingleSelectProps<T>): React.ReactElement => {
-  const [state, dispatch] = useAugmentedReducer<State<T>, SelectAction<T>>(
+  const [state, dispatch] = useAugmentedReducer(
     reducer,
     {
       isMenuOpen: false,

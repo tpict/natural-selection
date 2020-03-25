@@ -25,11 +25,11 @@ const shallowCompare = <Obj1 extends object, Obj2 extends object>(
 export const useAugmentedReducer = <
   State extends object,
   Action,
-  Props = Partial<State>
+  InitialState extends State = State
 >(
   reducer: Reducer<State, Action>,
-  initialState: State,
-  props: Props = {} as Props,
+  initialState: InitialState,
+  props: Partial<State> = {},
   onStateChange?: (state: State, action: Action, prevState: State) => void,
 ): [State, Dispatch<Action>] => {
   const prevStateRef = useRef(mergeNonUndefinedProperties(initialState, props));
