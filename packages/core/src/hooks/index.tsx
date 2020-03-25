@@ -1,6 +1,6 @@
 export * from "./useAccessibilityProps";
-export * from "./useAugmentedReducer";
 export * from "./useCallbackRef";
+export * from "./useControlledReducer";
 export * from "./useEnsuredId";
 export * from "./useMenuPlacement";
 export * from "./usePrevious";

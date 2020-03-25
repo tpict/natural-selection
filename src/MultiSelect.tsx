@@ -1,7 +1,7 @@
 import React, { Reducer, useCallback, useMemo, useRef } from "react";
 
 import {
-  useAugmentedReducer,
+  useControlledReducer,
   useCallbackRef,
   useScrollCaptor,
   useScrollToFocused,
@@ -76,7 +76,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
     },
   );
 
-  const [state, dispatch] = useAugmentedReducer(
+  const [state, dispatch] = useControlledReducer(
     reducer,
     {
       isMenuOpen: false,

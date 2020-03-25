@@ -4,7 +4,7 @@ import {
   useCallbackRef,
   useScrollCaptor,
   useScrollToFocused,
-  useAugmentedReducer,
+  useControlledReducer,
   createKeyDownHandler,
   selectReducer,
   SelectState,
@@ -69,7 +69,7 @@ export const SingleSelect = <
   onStateChange,
   ...rest
 }: SingleSelectProps<T>): React.ReactElement => {
-  const [state, dispatch] = useAugmentedReducer(
+  const [state, dispatch] = useControlledReducer(
     reducer,
     {
       isMenuOpen: false,

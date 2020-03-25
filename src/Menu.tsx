@@ -1,6 +1,6 @@
 import React, { Dispatch, Reducer, useMemo } from "react";
 import {
-  useAugmentedReducer,
+  useControlledReducer,
   useCallbackRef,
   createKeyDownHandler,
   selectReducer,
@@ -172,7 +172,7 @@ const MenuInner = React.forwardRef<
 });
 
 export const Menu: React.FC<{ options: MenuOptionType[] }> = ({ options }) => {
-  const [state, dispatch] = useAugmentedReducer(
+  const [state, dispatch] = useControlledReducer(
     reducer,
     {
       value: null,

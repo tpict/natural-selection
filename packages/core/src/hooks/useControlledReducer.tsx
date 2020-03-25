@@ -22,7 +22,7 @@ const shallowCompare = <Obj1 extends object, Obj2 extends object>(
         (obj2[key as keyof Obj2] as unknown),
   );
 
-export const useAugmentedReducer = <
+export const useControlledReducer = <
   State extends object,
   Action,
   InitialState extends State = State

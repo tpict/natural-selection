@@ -5,7 +5,7 @@ import { useTheme } from "@emotion/react";
 import range from "lodash-es/range";
 import {
   useCallbackRef,
-  useAugmentedReducer,
+  useControlledReducer,
   createKeyDownHandler,
   simpleMemo,
   selectReducer,
@@ -341,7 +341,7 @@ export const DatePicker: React.FC<{ id?: string; "aria-label"?: string }> = ({
   id: providedId,
   ...rest
 }) => {
-  const [state, dispatch] = useAugmentedReducer(reducer, {
+  const [state, dispatch] = useControlledReducer(reducer, {
     isMenuOpen: false,
     inputValue: "",
     focusedIndex: 0,
