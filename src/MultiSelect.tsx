@@ -1,7 +1,7 @@
 import React, { Reducer, useCallback, useMemo, useRef } from "react";
 
 import {
-  useAugmentedReducer,
+  useControlledReducer,
   useCallbackRef,
   useScrollCaptor,
   useScrollToFocused,
@@ -10,8 +10,6 @@ import {
   SelectState,
   SelectAction,
   AccessibilityPropsProvider,
-  AugmentedReducerCustom,
-  AugmentedReducerChangeHandler,
 } from "@natural-selection/core";
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
@@ -23,16 +21,11 @@ type MultiSelectProps<T> = {
   options: T[];
   "aria-label"?: string;
   value?: T[];
-  customReducer?: AugmentedReducerCustom<
-    State<T>,
-    SelectAction<T>,
-    Partial<Pick<MultiSelectProps<T>, "value" | "options">>
-  >;
-  onStateChange?: AugmentedReducerChangeHandler<
-    State<T>,
-    SelectAction<T>,
-    Partial<Pick<MultiSelectProps<T>, "value" | "options">>
-  >;
+  onStateChange?: (
+    state: State<T>,
+    action: SelectAction<T>,
+    prevState: State<T>,
+  ) => void;
 };
 
 type State<T> = SelectState & {
@@ -44,7 +37,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
   id,
   options,
   value,
-  customReducer,
+  onStateChange,
   ...rest
 }: MultiSelectProps<T>): React.ReactElement => {
   const { current: reducer } = useRef<Reducer<State<T>, SelectAction<T>>>(
@@ -83,7 +76,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
     },
   );
 
-  const [state, dispatch] = useAugmentedReducer(
+  const [state, dispatch] = useControlledReducer(
     reducer,
     {
       isMenuOpen: false,
@@ -93,7 +86,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
       options: [],
     },
     useMemo(() => ({ options, value }), [options, value]),
-    customReducer,
+    onStateChange,
   );
 
   const menuRef = useCallbackRef<HTMLDivElement>();

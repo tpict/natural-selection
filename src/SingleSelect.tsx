@@ -4,40 +4,33 @@ import {
   useCallbackRef,
   useScrollCaptor,
   useScrollToFocused,
-  useAugmentedReducer,
+  useControlledReducer,
   createKeyDownHandler,
   selectReducer,
   SelectState,
   SelectAction,
   AccessibilityPropsProvider,
-  AugmentedReducerCustom,
-  AugmentedReducerChangeHandler,
 } from "@natural-selection/core";
 
 import { Menu, Option, Container, Control, Placeholder } from "./components";
 import { useMenuPlacementStyles } from "./hooks";
 import { filteredOptionsSelector, focusedOptionSelector } from "./selectors";
 
+type State<T> = SelectState & {
+  options: T[];
+  value: T | null;
+};
+
 type SingleSelectProps<T> = {
   id?: string;
   "aria-label"?: string;
   options: T[];
   value?: T | null;
-  customReducer?: AugmentedReducerCustom<
-    State<T>,
-    SelectAction<T>,
-    Partial<Pick<SingleSelectProps<T>, "value" | "options">>
-  >;
-  onStateChange?: AugmentedReducerChangeHandler<
-    State<T>,
-    SelectAction<T>,
-    Partial<Pick<SingleSelectProps<T>, "value" | "options">>
-  >;
-};
-
-type State<T> = SelectState & {
-  options: T[];
-  value: T | null;
+  onStateChange?: (
+    state: State<T>,
+    action: SelectAction<T>,
+    prevState: State<T>,
+  ) => void;
 };
 
 const reducer = <OptionType extends { label: string }>(
@@ -73,11 +66,10 @@ export const SingleSelect = <
   id,
   options,
   value,
-  customReducer,
   onStateChange,
   ...rest
 }: SingleSelectProps<T>): React.ReactElement => {
-  const [state, dispatch] = useAugmentedReducer(
+  const [state, dispatch] = useControlledReducer(
     reducer,
     {
       isMenuOpen: false,
@@ -87,7 +79,6 @@ export const SingleSelect = <
       options: [],
     },
     useMemo(() => ({ value, options }), [value, options]),
-    customReducer,
     onStateChange,
   );
 
