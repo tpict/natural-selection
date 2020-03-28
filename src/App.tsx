@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Global, ThemeProvider } from "@emotion/react";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Route, Switch, Redirect, Link } from "react-router-dom";
 
-import { Examples } from "./Examples";
+import { Docs } from "./Docs";
 import { Test } from "./Test";
 import { blueOnPink, Theme, DynamicThemeContext } from "./themes";
 
@@ -33,15 +33,24 @@ export const App: React.FC = () => {
           />
 
           <Switch>
-            <Route path="/examples">
-              <Examples />
+            <Route
+              path="/:url*"
+              exact
+              strict
+              render={props => <Redirect to={`${props.location.pathname}/`} />}
+            />
+
+            <Route path="/docs">
+              <Docs />
             </Route>
 
             <Route path="/test">
               <Test />
             </Route>
 
-            <Route path="/">Coming soon!</Route>
+            <Route path="/">
+              <Link to="/docs">Docs</Link>
+            </Route>
           </Switch>
         </ThemeProvider>
       </DynamicThemeContext.Provider>
