@@ -109,7 +109,6 @@ export const Control = ({
 };
 
 export type OptionProps<T> = JSX.IntrinsicElements["div"] & {
-  as?: React.ElementType;
   option: T;
   dispatch: Dispatch<SelectOptionAction<T> | FocusOptionAction<T>>;
   innerRef?: React.Ref<HTMLDivElement>;
@@ -118,7 +117,6 @@ export type OptionProps<T> = JSX.IntrinsicElements["div"] & {
 };
 
 export const Option = simpleMemo(function Option<T>({
-  as: Component = "div",
   option,
   dispatch,
   innerRef,
@@ -145,7 +143,9 @@ export const Option = simpleMemo(function Option<T>({
   );
 
   return (
-    <Component
+    // ARIA role is provided by useAccessibilityProps
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div
       {...rest}
       {...getAccessibilityProps(option, { isFocused, isDisabled })}
       ref={innerRef}

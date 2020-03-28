@@ -25,7 +25,8 @@
     "noErrorTruncation": true,
 
     "paths": {
-      "@natural-selection/core": ["../packages/core/src/index.tsx"]
+      "@natural-selection/core": ["../packages/core/src/index.tsx"],
+      "docs/*": ["../docs/*"]
     }
   }
 }

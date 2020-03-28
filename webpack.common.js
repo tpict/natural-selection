@@ -5,6 +5,8 @@ const webpack = require("webpack");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+
 
 module.exports = {
   entry: {
@@ -16,6 +18,7 @@ module.exports = {
   },
 
   plugins: [
+    new CleanWebpackPlugin(),
     new ForkTsCheckerWebpackPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({

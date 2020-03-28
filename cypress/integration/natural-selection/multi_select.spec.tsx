@@ -1,5 +1,5 @@
 beforeEach(() => {
-  cy.visit("/multi-select");
+  cy.visit("/docs/examples/multi-select");
 });
 
 it("opens the menu on click", () => {

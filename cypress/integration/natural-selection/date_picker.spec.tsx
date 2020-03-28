@@ -1,6 +1,6 @@
 beforeEach(() => {
   cy.clock(new Date("2020-02-26").getTime());
-  cy.visit("/date-picker");
+  cy.visit("/docs/examples/date-picker");
 });
 
 it("opens/closes the picker on click", () => {

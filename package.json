@@ -15,17 +15,19 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-input-autosize": "^2.2.2",
+    "react-markdown": "^4.3.1",
     "react-router-dom": "^5.1.2",
     "reselect": "^4.0.0"
   },
   "scripts": {
     "build:lib": "cd packages/core && yarn && tsc && rm -rf node_modules",
-    "build:site": "webpack --config webpack.prod.js",
+    "build:site": "webpack --config webpack.prod.js && react-snap",
     "coverage": "yarn cypress && coveralls < coverage/lcov.info",
     "cypress": "cypress run --spec \"./cypress/integration/natural-selection/*.spec.tsx\"",
     "cypress:interactive": "cypress open",
     "lint:lib": "eslint \"packages/core/src/**/*.tsx\"",
     "lint:site": "eslint \"src/**/*.tsx\"",
+    "format:site": "eslint --fix \"src/**/*.tsx\"",
     "publish:lib": "cd packages/core && yarn publish",
     "publish:site": "gh-pages -d dist",
     "start": "webpack-dev-server --config webpack.dev.js",
@@ -56,6 +58,7 @@
     "@typescript-eslint/parser": "^2.19.2",
     "babel-loader": "^8.0.6",
     "babel-plugin-istanbul": "^6.0.0",
+    "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",
     "coveralls": "^3.0.11",
     "cypress": "^4.0.2",
@@ -70,9 +73,9 @@
     "html-loader": "^0.5.5",
     "istanbul-lib-coverage": "^3.0.0",
     "nyc": "^15.0.0",
-    "prerender-spa-plugin": "^3.4.0",
     "prettier": "^1.19.1",
     "raw-loader": "^4.0.0",
+    "react-snap": "^1.23.0",
     "source-map-support": "^0.5.16",
     "start-server-and-test": "^1.10.8",
     "ts-node": "^8.7.0",
@@ -95,5 +98,8 @@
     "exclude": [
       "packages/core/src/react-select/**/*.tsx"
     ]
+  },
+  "reactSnap": {
+    "source": "dist"
   }
 }
