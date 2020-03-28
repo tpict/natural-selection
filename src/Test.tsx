@@ -1,4 +1,4 @@
-import React  from "react";
+import React from "react";
 
 import { SingleSelect } from "./SingleSelect";
 import { MultiSelect } from "./MultiSelect";
@@ -56,17 +56,17 @@ const menuOptions = [
 export const Test: React.FC = () => {
   return (
     <>
-              <h1>single select</h1>
-              <SingleSelect options={options} />
+      <h1>single select</h1>
+      <SingleSelect options={options} />
 
-              <h1>multi select</h1>
-              <MultiSelect options={multiOptions} />
+      <h1>multi select</h1>
+      <MultiSelect options={multiOptions} />
 
-              <h1>date picker</h1>
-              <DatePicker />
+      <h1>date picker</h1>
+      <DatePicker />
 
-              <h1>menu</h1>
-              <Menu options={menuOptions} />
-                </>
+      <h1>menu</h1>
+      <Menu options={menuOptions} />
+    </>
   );
 };
