@@ -73,6 +73,10 @@ export const Control = ({
   );
 
   return (
+    // I am justifying this as "the element isn't really interactive, it just a
+    // decorative element that passes its focus to the input tag within".
+    // Also, keyboard events are handled by the parent Container component.
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events
     <div
       onBlur={handleBlur}
       onMouseDown={useCallback(
@@ -162,6 +166,8 @@ export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(function Menu(
   const { menuProps: accessibilityProps } = useAccessibilityProps();
 
   return (
+    // ARIA role is provided by useAccessibilityProps
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       {...rest}
       {...accessibilityProps}
