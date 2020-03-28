@@ -7,4 +7,16 @@ cache:
   directories:
     - node_modules
     - .cypress_cache
-
+jobs:
+  include:
+    - stage: lint
+      name: "Lint library"
+      script: yarn lint:lib
+    - script: yarn lint:site
+      name: "Lint site"
+    - stage: test
+      name: "Test library"
+      script: yarn test
+stages:
+  - lint
+  - test
