@@ -1,8 +1,7 @@
-import React, { Reducer, useCallback, useMemo, useRef } from "react";
+import React, { Reducer, useCallback, useMemo, useRef, useState } from "react";
 
 import {
   useControlledReducer,
-  useCallbackRef,
   useScrollCaptor,
   useScrollToFocused,
   createKeyDownHandler,
@@ -89,10 +88,10 @@ export const MultiSelect = <T extends { label: string; value: string }>({
     onStateChange,
   );
 
-  const menuRef = useCallbackRef<HTMLDivElement>();
-  const placementStyles = useMenuPlacementStyles(menuRef.current);
-  useScrollCaptor(menuRef.current);
-  const scrollToFocused = useScrollToFocused(menuRef.current);
+  const [menuRef, setMenuRef] = useState<HTMLDivElement | null>(null);
+  const placementStyles = useMenuPlacementStyles(menuRef);
+  useScrollCaptor(menuRef);
+  const scrollToFocused = useScrollToFocused(menuRef);
   const handleKeyDown = createKeyDownHandler(dispatch, state, scrollToFocused);
 
   return (
@@ -106,7 +105,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
         <Control
           value={state.inputValue}
           aria-label={rest["aria-label"]}
-          menuRef={menuRef.current}
+          menuRef={menuRef}
           onBlur={useCallback(() => dispatch({ type: "closeMenu" }), [
             dispatch,
           ])}
@@ -121,7 +120,7 @@ export const MultiSelect = <T extends { label: string; value: string }>({
         </Control>
 
         {state.isMenuOpen && (
-          <Menu ref={menuRef.callback} css={placementStyles}>
+          <Menu ref={setMenuRef} css={placementStyles}>
             {filteredOptionsSelector(state).map(option => {
               const isActive = state.value.includes(option);
 

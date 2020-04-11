@@ -1,10 +1,9 @@
-import React, { Reducer } from "react";
+import React, { Reducer, useState } from "react";
 import { parseDate as chrono } from "chrono-node";
 import dayjs, { Dayjs } from "dayjs";
 import { useTheme } from "@emotion/react";
 import range from "lodash-es/range";
 import {
-  useCallbackRef,
   useControlledReducer,
   createKeyDownHandler,
   simpleMemo,
@@ -350,11 +349,11 @@ export const DatePicker: React.FC<{ id?: string; "aria-label"?: string }> = ({
     dayOptions: getDayOptions(dayjs()),
   });
 
-  const menuRef = useCallbackRef<HTMLDivElement>();
+  const [menuRef, setMenuRef] = useState<HTMLDivElement | null>(null);
 
   const theme = useTheme();
   const { maxHeight: _m, ...position } = useMenuPlacementStyles(
-    menuRef.current,
+    menuRef,
     {
       maxHeight: 500,
       minHeight: 500,
@@ -533,7 +532,7 @@ export const DatePicker: React.FC<{ id?: string; "aria-label"?: string }> = ({
         <Control
           value={state.inputValue}
           aria-label={rest["aria-label"]}
-          menuRef={menuRef.current}
+          menuRef={menuRef}
           onInputChange={value => dispatch({ type: "textInput", value })}
           onBlur={() => dispatch({ type: "closeMenu" })}
           onMouseDown={() => dispatch({ type: "toggleMenu" })}
@@ -553,7 +552,7 @@ export const DatePicker: React.FC<{ id?: string; "aria-label"?: string }> = ({
         </Control>
 
         {state.isMenuOpen && (
-          <Menu data-testid={"datepicker-menu"} ref={menuRef} css={position}>
+          <Menu data-testid={"datepicker-menu"} ref={setMenuRef} css={position}>
             {navOptionsNode}
             {optionsNode}
           </Menu>
