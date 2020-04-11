@@ -1,7 +1,6 @@
-import React, { Dispatch, Reducer, useMemo } from "react";
+import React, { Dispatch, Reducer, useMemo, useState } from "react";
 import {
   useControlledReducer,
-  useCallbackRef,
   createKeyDownHandler,
   selectReducer,
   SelectState,
@@ -189,14 +188,14 @@ export const Menu: React.FC<{ options: MenuOptionType[] }> = ({ options }) => {
     ),
   );
 
-  const menuRef = useCallbackRef<HTMLDivElement>();
+  const [menuRef, setMenuRef] = useState<HTMLDivElement | null>(null);
   const handleKeyDown = createKeyDownHandler(dispatch, state);
 
   return (
     <Container onKeyDown={handleKeyDown}>
       <Control
         value={state.inputValue}
-        menuRef={menuRef.current}
+        menuRef={menuRef}
         onMouseDown={() => dispatch({ type: "toggleMenu" })}
         onInputChange={value => dispatch({ type: "textInput", value })}
         onBlur={() => dispatch({ type: "closeMenu" })}
@@ -209,7 +208,7 @@ export const Menu: React.FC<{ options: MenuOptionType[] }> = ({ options }) => {
 
       {state.isMenuOpen && (
         <MenuInner
-          ref={menuRef}
+          ref={setMenuRef}
           options={state.options}
           focusedOption={flatOptionsSelector(state)[state.focusedIndex]}
           dispatch={dispatch}

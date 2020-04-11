@@ -1,7 +1,6 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 
 import {
-  useCallbackRef,
   useScrollCaptor,
   useScrollToFocused,
   useControlledReducer,
@@ -82,10 +81,10 @@ export const SingleSelect = <
     onStateChange,
   );
 
-  const menuRef = useCallbackRef<HTMLDivElement>();
-  useScrollCaptor(menuRef.current);
-  const scrollToFocused = useScrollToFocused(menuRef.current);
-  const placementStyles = useMenuPlacementStyles(menuRef.current);
+  const [menuRef, setMenuRef] = useState<HTMLDivElement | null>(null);
+  useScrollCaptor(menuRef);
+  const scrollToFocused = useScrollToFocused(menuRef);
+  const placementStyles = useMenuPlacementStyles(menuRef);
   const handleKeyDown = createKeyDownHandler(dispatch, state, scrollToFocused);
 
   return (
@@ -101,7 +100,7 @@ export const SingleSelect = <
           aria-label={rest["aria-label"]}
           onMouseDown={() => dispatch({ type: "toggleMenu" })}
           onInputChange={value => dispatch({ type: "textInput", value })}
-          menuRef={menuRef.current}
+          menuRef={menuRef}
           onBlur={useCallback(() => dispatch({ type: "closeMenu" }), [
             dispatch,
           ])}
@@ -113,7 +112,7 @@ export const SingleSelect = <
         </Control>
 
         {state.isMenuOpen && (
-          <Menu ref={menuRef.callback} css={placementStyles}>
+          <Menu ref={setMenuRef} css={placementStyles}>
             {filteredOptionsSelector(state).map(option => (
               <Option
                 key={option.value}
