@@ -1,13 +1,8 @@
-import {
-  Reducer,
-  Dispatch,
-  useEffect,
-  useRef,
-  useMemo,
-  useReducer,
-} from "react";
+import { Reducer, Dispatch, useEffect, useRef, useState } from "react";
 
 import { mergeNonUndefinedProperties } from "../utils";
+
+const defaultProps = {};
 
 // https://stackoverflow.com/a/52323412
 const shallowCompare = <Obj1 extends object, Obj2 extends object>(
@@ -29,10 +24,9 @@ export const useControlledReducer = <
 >(
   reducer: Reducer<State, Action>,
   initialState: InitialState,
-  props: Partial<State> = {},
+  props: Partial<State> = defaultProps,
   onStateChange?: (state: State, action: Action, prevState: State) => void,
 ): [State, Dispatch<Action>] => {
-  const prevStateRef = useRef(mergeNonUndefinedProperties(initialState, props));
   const propsRef = useRef(props);
   const onStateChangeRef = useRef(onStateChange);
 
@@ -41,11 +35,13 @@ export const useControlledReducer = <
     onStateChangeRef.current = onStateChange;
   }, [props, onStateChange]);
 
-  const { current: reduce } = useRef<Reducer<State, Action>>((_, action) => {
+  const [state, setState] = useState<State>(
+    mergeNonUndefinedProperties(initialState, props),
+  );
+
+  const reducerRef = useRef<Reducer<State, Action>>((prevState, action) => {
     const { current: props } = propsRef;
     const { current: onStateChange } = onStateChangeRef;
-
-    const prevState = prevStateRef.current;
 
     let nextState = reducer(prevState, action);
     if (nextState !== prevState) {
@@ -61,19 +57,16 @@ export const useControlledReducer = <
       }
     }
 
-    prevStateRef.current = nextState;
     return nextState;
   });
 
-  const [innerState, dispatch] = useReducer(reduce, prevStateRef.current);
+  useEffect(() => {
+    setState(state => mergeNonUndefinedProperties(state, props));
+  }, [props]);
 
-  // Redundant props merge so a render will be triggered after props change, even
-  // without a corresponding action
-  const state = useMemo(() => {
-    const mergedState = mergeNonUndefinedProperties(innerState, props);
-    prevStateRef.current = mergedState;
-    return mergedState;
-  }, [innerState, props]);
+  const dispatch = useRef<Dispatch<Action>>(action => {
+    setState(state => reducerRef.current(state, action));
+  }).current;
 
   return [state, dispatch];
 };
