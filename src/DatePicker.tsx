@@ -352,13 +352,10 @@ export const DatePicker: React.FC<{ id?: string; "aria-label"?: string }> = ({
   const [menuRef, setMenuRef] = useState<HTMLDivElement | null>(null);
 
   const theme = useTheme();
-  const { maxHeight: _m, ...position } = useMenuPlacementStyles(
-    menuRef,
-    {
-      maxHeight: 500,
-      minHeight: 500,
-    },
-  );
+  const { maxHeight: _m, ...position } = useMenuPlacementStyles(menuRef, {
+    maxHeight: 500,
+    minHeight: 500,
+  });
 
   const firstOfMonth = firstOfMonthSelector(state);
 
