@@ -121,3 +121,11 @@ it("closes the menu on loss of focus", () => {
   cy.wrap(document.body).click({ force: true });
   cy.queryByText("Option 1").should("not.exist");
 });
+
+it("clears input on close", () => {
+  // TODO fix this force, Cypress thinks the placeholder is covering it
+  cy.queryByLabelText("Single select example").type("Optio", { force: true });
+  cy.queryByText("Optio").should("exist");
+  cy.wrap(document.body).click({ force: true });
+  cy.queryByText("Optio").should("not.exist");
+});

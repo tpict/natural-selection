@@ -37,6 +37,7 @@ type SelectReducerConfig<OptionType, State> = {
   closeMenuOnSelect?: boolean;
   resetFocusOnInput?: boolean;
   clearInputOnSelect?: boolean;
+  clearInputOnClose?: boolean;
   visibleOptionsSelector?: (state: State) => OptionType[];
 };
 
@@ -51,6 +52,7 @@ export const selectReducer = <
     resetFocusOnInput = true,
     closeMenuOnSelect = true,
     clearInputOnSelect = true,
+    clearInputOnClose = true,
     visibleOptionsSelector = state => (state as any).options ?? [],
   }: SelectReducerConfig<OptionType, State>,
 ): State => {
@@ -58,12 +60,18 @@ export const selectReducer = <
     case "openMenu":
       return { ...state, isMenuOpen: true };
     case "closeMenu":
-      return { ...state, isMenuOpen: false, focusedIndex: 0 };
+      return {
+        ...state,
+        isMenuOpen: false,
+        focusedIndex: 0,
+        ...(clearInputOnClose && { inputValue: "" }),
+      };
     case "toggleMenu":
       return {
         ...state,
         isMenuOpen: !state.isMenuOpen,
         ...(state.isMenuOpen && { focusedIndex: 0 }),
+        ...(state.isMenuOpen && clearInputOnClose && { inputValue: "" }),
       };
     case "textInput":
       return {
