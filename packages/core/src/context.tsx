@@ -22,6 +22,7 @@ export type AccessibilityContextType = {
     option: OptionType,
     state: {
       isFocused?: boolean;
+      isDisabled?: boolean;
     },
   ) => { "aria-selected"?: boolean; role?: "option"; id?: string };
 };
