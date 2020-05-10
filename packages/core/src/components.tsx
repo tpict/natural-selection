@@ -119,6 +119,8 @@ export const Option = simpleMemo(function Option<T>({
   option,
   dispatch,
   innerRef,
+  isDisabled,
+  isFocused,
   ...rest
 }: OptionProps<T>) {
   const { getOptionProps: getAccessibilityProps } = useAccessibilityProps();
@@ -142,11 +144,11 @@ export const Option = simpleMemo(function Option<T>({
   return (
     <Component
       {...rest}
-      {...getAccessibilityProps(option, { isFocused: rest.isFocused })}
+      {...getAccessibilityProps(option, { isFocused, isDisabled })}
       ref={innerRef}
       tabIndex={-1}
       onMouseDown={preventDefault}
-      {...(!rest.isDisabled && {
+      {...(!isDisabled && {
         onClick: onClick,
         onMouseMove: onHover,
         onMouseOver: onHover,
