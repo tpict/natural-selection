@@ -40,10 +40,9 @@ export const useControlledReducer = <
 
   // Keep these refs in sync with the corresponding state/props
   useEffect(() => {
-    stateRef.current = state;
     propsRef.current = props;
     onStateChangeRef.current = onStateChange;
-  }, [state, props, onStateChange]);
+  }, [props, onStateChange]);
 
   // Bind arguments to onStateChange so it can be called after state updates
   // without having to bring those arguments into a higher scope.
@@ -78,7 +77,11 @@ export const useControlledReducer = <
 
   // Merge prop changes into state.
   useEffect(() => {
-    setState(state => mergeNonUndefinedProperties(state, props));
+    setState(state => {
+      const nextState = mergeNonUndefinedProperties(state, props);
+      stateRef.current = nextState;
+      return nextState;
+    });
   }, [props]);
 
   // Call onStateChange after state updates.
@@ -90,6 +93,8 @@ export const useControlledReducer = <
   const dispatch = useRef<Dispatch<Action>>(action => {
     const prevState = stateRef.current;
     const nextState = reducerRef.current(prevState, action);
+
+    stateRef.current = nextState;
     setState(nextState);
 
     // If state is unchanged, we need to call onStateChange manually as the
