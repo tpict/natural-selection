@@ -33,7 +33,8 @@ export const useControlledReducer = <
 
   // Mirror props/state into refs so we can reference them in dependencies of
   // "dispatch" without requiring re-renders.
-  // The idea is to make "dispatch" a static reference just like vanilla React.
+  // The idea is to make "dispatch" a static reference just like vanilla
+  // useReducer.
   const stateRef = useRef(state);
   const propsRef = useRef(props);
   const onStateChangeRef = useRef(onStateChange);
@@ -54,25 +55,29 @@ export const useControlledReducer = <
   const reducerRef = useRef<Reducer<State, Action>>((prevState, action) => {
     const { current: props } = propsRef;
 
-    let nextState = reducer(prevState, action);
-    if (nextState !== prevState) {
-      // need to declare a new variable here since nextState may be reassigned
-      // TODO remove the "let" statement so this isn't an issue
-      const unmergedNextState = nextState;
+    const nextState = reducer(prevState, action);
 
-      afterStateChangeCallbackRef.current = () =>
-        onStateChangeRef.current?.(unmergedNextState, action, prevState);
-
-      // We need to merge props on top after the reducer is done in case it
-      // overrode any of them, but we should only do this if the state
-      // actually changed, otherwise no-op actions will trigger a render.
-      nextState = mergeNonUndefinedProperties(nextState, props);
-      if (shallowCompare(nextState, prevState)) {
-        nextState = prevState;
-      }
+    // If the reducer returns the current state, bail out early
+    if (nextState === prevState) {
+      return prevState;
     }
 
-    return nextState;
+    afterStateChangeCallbackRef.current = () =>
+      onStateChangeRef.current?.(nextState, action, prevState);
+
+    // We need to merge props on top after the reducer is done in case it
+    // overrode any of them.
+    const nextStateWithProps = mergeNonUndefinedProperties(nextState, props);
+
+    // We shallow compare the result against the previous state - if no
+    // properties changed, we can bail out early again.
+    // We still bind to afterStateChangeCallback so that the user can handle
+    // the action themselves.
+    if (shallowCompare(nextStateWithProps, prevState)) {
+      return prevState;
+    }
+
+    return nextStateWithProps;
   });
 
   // Merge prop changes into state.
