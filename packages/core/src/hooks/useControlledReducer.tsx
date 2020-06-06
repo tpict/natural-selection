@@ -76,7 +76,14 @@ export const useControlledReducer = <
   });
 
   // Merge prop changes into state.
+  const skipPropMergeRef = useRef(true);
   useEffect(() => {
+    if (skipPropMergeRef.current) {
+      // No need to do this on mount
+      skipPropMergeRef.current = false;
+      return;
+    }
+
     setState(state => {
       const nextState = mergeNonUndefinedProperties(state, props);
       stateRef.current = nextState;
