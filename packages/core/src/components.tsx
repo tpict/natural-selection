@@ -38,6 +38,7 @@ export type ControlProps = Omit<InputProps, "inputRef"> & {
   menuRef: HTMLElement | null;
   inputRef?: React.MutableRefObject<HTMLInputElement | null>;
   children: React.ReactNode | ((input: React.ReactNode) => React.ReactNode);
+  autosizeInputProps?: InputProps;
 };
 
 export const Control = ({
@@ -51,6 +52,7 @@ export const Control = ({
   onClick,
   onChange,
   onInputChange,
+  autosizeInputProps,
   ...rest
 }: ControlProps): React.ReactElement => {
   const defaultInputRef = useRef<HTMLInputElement | null>(null);
@@ -61,6 +63,7 @@ export const Control = ({
     <Input
       {...rest}
       {...accessibilityProps}
+      {...autosizeInputProps}
       ref={inputRef ?? defaultInputRef}
       onChange={useCallback(
         event => {
