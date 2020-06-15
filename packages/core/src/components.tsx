@@ -187,11 +187,11 @@ export type AccessibilityPropsProviderProps<OptionType> = {
   getOptionId?: (
     prefix: string,
     option: OptionType,
-    options: OptionType[],
+    options: readonly OptionType[],
   ) => string;
   getOptionLabel?: (option: OptionType) => string | number | undefined;
   focusedOption: OptionType | null;
-  options: OptionType[];
+  options: readonly OptionType[];
 };
 
 export const AccessibilityPropsProvider = <OptionType extends unknown>({

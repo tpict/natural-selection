@@ -25,11 +25,13 @@ export const mergeNonUndefinedProperties = <T extends object>(
 export const getDefaultOptionId = <OptionType extends unknown>(
   prefix: string,
   option: OptionType,
-  options: OptionType[],
+  options: readonly OptionType[],
 ): string => {
   const index = options.indexOf(option);
   if (index < -1) {
-    throw new Error();
+    throw new Error(
+      "getDefaultOptionId called with incompatible option, options arguments",
+    );
   }
 
   return `${prefix}-option-${index}`;
