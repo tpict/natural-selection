@@ -38,7 +38,7 @@ type SelectReducerConfig<OptionType, State> = {
   resetFocusOnInput?: boolean;
   clearInputOnSelect?: boolean;
   clearInputOnClose?: boolean;
-  visibleOptionsSelector?: (state: State) => OptionType[];
+  visibleOptionsSelector?: (state: State) => readonly OptionType[];
 };
 
 export const selectReducer = <
