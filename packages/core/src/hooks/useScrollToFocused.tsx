@@ -1,19 +1,10 @@
 import { useRef, useEffect } from "react";
 
-import { usePrevious } from "./usePrevious";
-
-export const useScrollToFocused = (
-  menuEl: HTMLElement | null,
-): (() => void) => {
-  const scrollOnUpdateRef = useRef(false);
-  const didJustScrollRef = usePrevious(scrollOnUpdateRef.current);
+export const useScrollToFocused = (menuEl: HTMLElement | null): void => {
+  const lastHoveredElement = useRef<HTMLElement | null>(null);
 
   const mutationObserverRef = useRef<MutationObserver>(
     new MutationObserver(mutationsList => {
-      if (!scrollOnUpdateRef.current) {
-        return;
-      }
-
       for (const mutation of mutationsList) {
         if (
           mutation.type === "attributes" &&
@@ -22,9 +13,12 @@ export const useScrollToFocused = (
           const target = mutation.target as HTMLElement;
 
           if (target.getAttribute?.("aria-selected") === "true") {
+            if (lastHoveredElement.current === target) {
+              return;
+            }
+
             target.scrollIntoView({
               block: "nearest",
-              behavior: "smooth",
             });
 
             break;
@@ -32,7 +26,7 @@ export const useScrollToFocused = (
         }
       }
 
-      scrollOnUpdateRef.current = false;
+      lastHoveredElement.current = null;
     }),
   );
 
@@ -51,10 +45,7 @@ export const useScrollToFocused = (
     });
 
     const mouseHandler = (event: MouseEvent): void => {
-      if (didJustScrollRef.current) {
-        event.stopPropagation();
-        event.preventDefault();
-      }
+      lastHoveredElement.current = event.target as HTMLElement;
     };
 
     menuEl.addEventListener("mouseover", mouseHandler);
@@ -63,9 +54,5 @@ export const useScrollToFocused = (
       menuEl.removeEventListener("mouseover", mouseHandler);
       mutationObserver.disconnect();
     };
-    // usePrevious returns a ref
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [menuEl]);
-
-  return useRef(() => (scrollOnUpdateRef.current = true)).current;
 };

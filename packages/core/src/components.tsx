@@ -136,10 +136,10 @@ export const Option = simpleMemo(function Option<T>({
     [dispatch, option],
   );
 
-  const onHover = useCallback(
+  const onMouseMove = useCallback(
     (event: React.SyntheticEvent) => {
       event.stopPropagation();
-      dispatch({ type: "focusOption", option, source: "mouse" });
+      dispatch({ type: "focusOption", option });
     },
     [dispatch, option],
   );
@@ -152,9 +152,8 @@ export const Option = simpleMemo(function Option<T>({
       tabIndex={-1}
       onMouseDown={preventDefault}
       {...(!isDisabled && {
-        onClick: onClick,
-        onMouseMove: onHover,
-        onMouseOver: onHover,
+        onClick,
+        onMouseMove,
       })}
     />
   );

@@ -23,7 +23,7 @@ it("focuses options on mouse hover", () => {
     "rgb(0, 0, 255)",
   );
 
-  cy.queryByText("Option 2").trigger("mouseover");
+  cy.queryByText("Option 2").trigger("mousemove");
   cy.queryByText("Option 2").should(
     "have.css",
     "backgroundColor",
@@ -33,7 +33,7 @@ it("focuses options on mouse hover", () => {
   // DOM focus unchanged
   cy.queryByLabelText("Multi select example").should("be.focused");
 
-  cy.queryByText("Option 1").trigger("mouseover");
+  cy.queryByText("Option 1").trigger("mousemove");
   cy.queryByText("Option 2").should(
     "have.css",
     "backgroundColor",
@@ -67,7 +67,7 @@ it("focuses options on arrow key press", () => {
   cy.queryByLabelText("Multi select example").type("{uparrow}", {
     force: true,
   });
-  cy.queryByText("Option 1").trigger("mouseover");
+  cy.queryByText("Option 1").trigger("mousemove");
   cy.queryByText("Option 2").should(
     "have.css",
     "backgroundColor",
