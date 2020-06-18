@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useRef } from "react";
 
 import {
   useScrollCaptor,
@@ -54,20 +54,20 @@ const reducer = <OptionType extends { label: string }>(
       break;
   }
 
-  return selectReducer(state, action, {
-    visibleOptionsSelector: filteredOptionsSelector,
-  });
+  return selectReducer(state, action, {});
 };
 
 export const SingleSelect = <
   T extends { value: string; label: string; isDisabled?: boolean }
 >({
   id,
-  options,
   value,
   onStateChange,
+  children,
   ...rest
 }: SingleSelectProps<T>): React.ReactElement => {
+  const [options, setOptions] = useState([]);
+
   const [state, dispatch] = useControlledReducer(
     reducer,
     {
@@ -86,6 +86,21 @@ export const SingleSelect = <
   const scrollToFocused = useScrollToFocused(menuRef);
   const placementStyles = useMenuPlacementStyles(menuRef);
   const handleKeyDown = createKeyDownHandler(dispatch, state, scrollToFocused);
+
+  console.log('render');
+
+  const registerOption = useRef(option => {
+    setOptions(options => [...options, option]);
+  }).current;
+
+  const unregisterOption = useRef(option => {
+    setOptions(options => {
+      const index = options.indexOf(option);
+      const newOptions = [...options];
+      newOptions.splice(index, 1);
+      return newOptions;
+    });
+  }).current;
 
   return (
     <AccessibilityPropsProvider
@@ -113,6 +128,15 @@ export const SingleSelect = <
 
         {state.isMenuOpen && (
           <Menu ref={setMenuRef} css={placementStyles}>
+            {children({
+              registerOption,
+              unregisterOption,
+              isFocused: option => option === focusedOptionSelector(state),
+              isActive: option => option === state.value,
+              dispatch
+            }, state)}
+
+            {/*
             {filteredOptionsSelector(state).map(option => (
               <Option
                 key={option.value}
@@ -124,6 +148,7 @@ export const SingleSelect = <
                 {option.label}
               </Option>
             ))}
+                */}
           </Menu>
         )}
       </Container>

@@ -1,8 +1,69 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Highlight, { defaultProps } from "prism-react-renderer";
+import { useAccessibilityProps } from "@natural-selection/core";
 
 import { SingleSelect } from "SingleSelect";
-import SingleSelectSource from "!!raw-loader!../SingleSelect";
+
+const MagicOption: React.FC = ({
+  dispatch,
+  option,
+  isDisabled,
+  isActive,
+  isFocused,
+  registerOption,
+  unregisterOption,
+}) => {
+  useEffect(() => {
+    registerOption(option);
+    return () => unregisterOption(option);
+  }, []);
+
+  const { getOptionProps: getAccessibilityProps } = useAccessibilityProps();
+
+  const onClick = useCallback(
+    (event: React.SyntheticEvent) => {
+      event.stopPropagation();
+      dispatch({ type: "selectOption", option });
+    },
+    [dispatch, option],
+  );
+
+  const onHover = useCallback(
+    (event: React.SyntheticEvent) => {
+      event.stopPropagation();
+      dispatch({ type: "focusOption", option, source: "mouse" });
+    },
+    [dispatch, option],
+  );
+
+  return (
+    <div
+      onClick={onClick}
+      onMouseMove={onHover}
+      onMouseOver={onHover}
+      {...getAccessibilityProps(option, { isFocused: isFocused(option), isDisabled })}
+      css={theme => ({
+        color: theme.colors.background,
+        backgroundColor: theme.colors.foreground,
+        padding: theme.space.option.padding,
+        cursor: "pointer",
+
+        ...(isDisabled && {
+          opacity: 0.5,
+          cursor: "initial",
+        }),
+        ...(isActive(option) && {
+          backgroundColor: theme.colors.foregroundActive,
+        }),
+        ...(isFocused(option) && {
+          backgroundColor: theme.colors.foregroundFocused,
+        }),
+      })}
+    >
+      {option.label}
+    </div>
+  );
+};
 
 const options = [
   { value: "1", label: "Option 1" },
@@ -34,28 +95,16 @@ export const SingleSelectExample: React.FC = () => {
     <>
       <SingleSelect
         aria-label="Single select example"
-        options={options}
-        value={value}
         onStateChange={({ value }) => setValue(value)}
-      />
-
-      <Highlight {...defaultProps} code={SingleSelectSource} language="tsx">
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <pre
-            className={className}
-            style={style}
-            css={{ fontSize: "0.875rem" }}
-          >
-            {tokens.map((line, i) => (
-              <div key={i} {...getLineProps({ line, key: i })}>
-                {line.map((token, key) => (
-                  <span key={i} {...getTokenProps({ token, key })} />
-                ))}
-              </div>
-            ))}
-          </pre>
-        )}
-      </Highlight>
+      >
+        {(props, state) =>
+          options
+          .filter(option => option.label.toLowerCase().includes(state.inputValue))
+            .map(option => (
+              <MagicOption key={option.value} {...props} option={option} />
+            ))
+        }
+      </SingleSelect>
     </>
   );
 };
