@@ -12,13 +12,11 @@ export type SelectOptionAction<OptionType> = {
 export type FocusOptionAction<OptionType> = {
   type: "focusOption";
   option: OptionType;
-  source?: "keyboard" | "mouse";
 };
 
 export type RelativeFocusAction = {
   type: "relativeFocus";
   direction: number;
-  source?: "keyboard" | "mouse";
 };
 
 export type SelectAction<OptionType> =

@@ -91,8 +91,8 @@ export const MultiSelect = <T extends { label: string; value: string }>({
   const [menuRef, setMenuRef] = useState<HTMLDivElement | null>(null);
   const placementStyles = useMenuPlacementStyles(menuRef);
   useScrollCaptor(menuRef);
-  const scrollToFocused = useScrollToFocused(menuRef);
-  const handleKeyDown = createKeyDownHandler(dispatch, state, scrollToFocused);
+  useScrollToFocused(menuRef);
+  const handleKeyDown = createKeyDownHandler(dispatch, state);
 
   return (
     <AccessibilityPropsProvider

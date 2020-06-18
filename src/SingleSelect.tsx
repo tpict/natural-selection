@@ -83,9 +83,9 @@ export const SingleSelect = <
 
   const [menuRef, setMenuRef] = useState<HTMLDivElement | null>(null);
   useScrollCaptor(menuRef);
-  const scrollToFocused = useScrollToFocused(menuRef);
+  useScrollToFocused(menuRef);
   const placementStyles = useMenuPlacementStyles(menuRef);
-  const handleKeyDown = createKeyDownHandler(dispatch, state, scrollToFocused);
+  const handleKeyDown = createKeyDownHandler(dispatch, state);
 
   return (
     <AccessibilityPropsProvider

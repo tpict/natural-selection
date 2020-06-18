@@ -24,7 +24,7 @@ it("picks a day and closes on click", () => {
 it("picks a day and closes on space", () => {
   // TODO fix this force, Cypress thinks the placeholder is covering it
   cy.queryByLabelText("Date picker example").click({ force: true });
-  cy.queryByText("8").trigger("mouseover");
+  cy.queryByText("8").trigger("mousemove");
   cy.queryByLabelText("Date picker example").type(" ", { force: true });
   cy.queryByText("02/08/2020").should("exist");
   cy.queryByText("February").should("not.exist");
