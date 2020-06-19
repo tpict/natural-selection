@@ -129,3 +129,32 @@ it("clears input on close", () => {
   cy.wrap(document.body).click({ force: true });
   cy.queryByText("Optio").should("not.exist");
 });
+
+it("closes the menu on escape press", () => {
+  cy.queryByText("Pick an option").click();
+  cy.queryByText("Option 1").should("exist");
+  cy.queryByLabelText("Single select example").type("{esc}", {
+    force: true,
+  });
+  cy.queryByText("Option 1").should("not.exist");
+});
+
+it("clears the selected value on backspace", () => {
+  cy.queryByText("Pick an option").click();
+  cy.queryByText("Option 2").click();
+  // TODO fix this force, Cypress thinks the placeholder is covering it
+  cy.queryByLabelText("Single select example").type("{backspace}", {
+    force: true,
+  });
+  cy.queryByText("Option 2").should("not.exist");
+});
+
+it("doesn't interrupt backspace when text is entered", () => {
+  cy.queryByText("Pick an option").click();
+  cy.queryByText("Option 2").click();
+  // TODO fix this force, Cypress thinks the placeholder is covering it
+  cy.queryByLabelText("Single select example").type("ABC{backspace}", {
+    force: true,
+  });
+  cy.queryByText("AB").should("exist");
+});
